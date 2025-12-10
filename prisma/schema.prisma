@@ -4,11 +4,44 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+//このテーブルは後からでも良いのでいったん考えなくていい。
+model User {
+  id        String        @id @default(cuid())
+  githubId  String        @unique
+  name      String?
+  avatarUrl String?
+
+  dailyReports DailyReport[]
+}
+
+//まずこのデイリーレポートテーブルを理解しましょう
+model DailyReport {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  // 1. 作業記録
+  workDurationSec Int          // 作業時間（秒）
+  githubUrl       String       // PR / コミットのURL
+
+  // 2. GitHub連携（数値だけ持つ）
+  filesChanged  Int?           // 変更ファイル数
+  additions     Int?           // 追加行数
+  deletions     Int?           // 削除行数
+
+  // 3. AI評価（決まった項目に分けて保存）
+  aiScore      String?         // A/B/C や 0-100 など
+  aiGoodPoints String?         // 良かった点
+  aiBadPoints  String?         // 改善点・課題
+  aiStudyTime  String?         // 学習時間コメントなど
 }
