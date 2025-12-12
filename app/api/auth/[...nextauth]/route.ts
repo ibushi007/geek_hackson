@@ -1,21 +1,6 @@
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
-import { PrismaClient } from "@prisma/client";
-
-const globalForPrisma = globalThis as unknown as { 
-    prisma: PrismaClient | undefined 
-};
-
-function getPrisma() {
-    if (!globalForPrisma.prisma) {
-        if (!process.env.DATABASE_URL) {
-            throw new Error("DATABASE_URL is not set in environment variables!");
-        }
-        globalForPrisma.prisma = new PrismaClient();
-    }
-    return globalForPrisma.prisma;
-}
-
+import { prisma } from "@/lib/prisma";
 export const authOptions = {
     providers: [
         GitHub({
@@ -28,7 +13,6 @@ export const authOptions = {
             if (account?.provider === "github" && profile) {
                 //github認証成功時の処理→userテーブルにデータを保存
                 try{
-                    const prisma = getPrisma();
                     await prisma.user.upsert({
                         where: { githubId: profile.login as string },
                         update: {
@@ -49,14 +33,17 @@ export const authOptions = {
             return true;
         },
         async session({ session, token }: any) {
-            if (session.user && token.sub) {
-                const prisma = getPrisma();
+            if (session.user && token.githubId) {
+                try {
                 const user = await prisma.user.findUnique({
-                    where: { githubId: token.sub },
+                    where: { githubId: token.githubId },
                 });
                 if (user) {
                     session.user.id = user.id;
                     session.user.githubId = user.githubId;
+                }
+                } catch (error) {
+                    console.error("セッション取得エラー:", error);
                 }
             }
             return session;
