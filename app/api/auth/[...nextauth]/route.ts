@@ -6,10 +6,15 @@ export const authOptions = {
         GitHub({
             clientId: process.env.GITHUB_ID!,
             clientSecret: process.env.GITHUB_SECRET!,
+            authorization: {
+                params: {
+                    scope: "read:user repo",
+                }
+            }
         }),
     ],
     callbacks: {
-        async signIn({ user, account, profile }: any) {
+        async signIn({ account, profile }: any) {
             if (account?.provider === "github" && profile) {
                 //github認証成功時の処理→userテーブルにデータを保存
                 try{
@@ -46,11 +51,15 @@ export const authOptions = {
                     console.error("セッション取得エラー:", error);
                 }
             }
+            if (token.accessToken) {
+                session.accessToken = token.accessToken;
+            }
             return session;
         },
         async jwt({ token, account, profile }: any) {
             if (account && profile) {
                 token.githubId = profile.login;
+                token.accessToken = account.access_token;
             }
             return token;
         },
