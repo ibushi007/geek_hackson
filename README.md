@@ -31,15 +31,6 @@ npm install
 
 cp .env.example .env
 
-
-例：GitHub OAuth（NextAuth 用）
-
-GITHUB_ID=xxxxxxx
-GITHUB_SECRET=xxxxxxx
-NEXTAUTH_SECRET=任意の長いランダム文字列
-NEXTAUTH_URL=http://localhost:3000
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/DATABASE?schema=public"
-
 ✅ 1-4. Prisma を初期化（DB マイグレーション）
 npm run prisma:migrate
 
