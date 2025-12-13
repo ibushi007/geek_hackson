@@ -52,7 +52,6 @@ export class ReportController {
       const reports = await reportUseCase.showReports(session.user.id);
 
       // Spring Bootでいう ResponseEntity.ok(body) です
-      // { reports: ... } という形式でJSONを返します
       return NextResponse.json({ reports: reports });
     } catch (error) {
       console.error("Error fetching reports:", error);
