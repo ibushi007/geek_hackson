@@ -43,5 +43,5 @@ model DailyReport {
   aiScore      Int         // 0-100 など
   aiGoodPoints String         // 良かった点
   aiBadPoints  String         // 改善点・課題
-  aiStudyTime  String?         // 学習時間コメントなど
+  aiStudyTime  Int?         // 学習時間コメントなど
 }
