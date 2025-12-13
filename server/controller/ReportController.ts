@@ -44,7 +44,6 @@ export class ReportController {
    */
   async showReports() {
     try {
-      // セッション定義
       const session = await getServerSession(authOptions);
 
       if (!session?.user?.id) {
