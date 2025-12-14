@@ -1,6 +1,5 @@
 import { ReportRepository } from "@/server/repository/ReportRepository";
-import { CreateReportInput, ReportResponse } from "@/types/report";
-import { DailyReport } from "@prisma/client";
+import { CreateReportInput, ReportResponse, ShowReportsResponse } from "@/types/report";
 
 const reportRepository = new ReportRepository();
 
@@ -34,8 +33,19 @@ export class ReportUseCase {
    * @param userId ユーザーID
    * @returns ログインユーザーの日報一覧
    */
-  async showReports(userId: string): Promise<DailyReport[]> {
+  async showReports(userId: string): Promise<ShowReportsResponse> {
     const reports = await reportRepository.findByUserId(userId);
-    return reports;
+    return {
+      reports: reports.map((report) => ({
+        id: report.id,
+        createdAt: report.createdAt.toISOString(),
+        workDurationSec: report.workDurationSec,
+        githubUrl: report.githubUrl,
+        aiScore: report.aiScore,
+        aiGoodPoints: report.aiGoodPoints,
+        aiBadPoints: report.aiBadPoints,
+        aiStudyTime: report.aiStudyTime,
+      })),
+    };
   }
 }

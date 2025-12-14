@@ -19,3 +19,16 @@ export type ReportResponse = {
   aiBadPoints: string;
   aiStudyTime: string | null;
 };
+
+export type ShowReportsResponse = {
+  reports: Array<{
+    id: string;
+    createdAt: string; // ISO 8601形式
+    workDurationSec: number | null;
+    githubUrl: string;
+    aiScore: number;
+    aiGoodPoints: string;
+    aiBadPoints: string;
+    aiStudyTime: string | null;
+  }>;
+};
