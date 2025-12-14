@@ -1,7 +1,32 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GitHub from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
-export const authOptions = {
+import type { Account, Profile } from "next-auth";
+import type { JWT } from "next-auth/jwt";
+
+// 拡張した型定義
+interface ExtendedSession {
+  user?: {
+    id?: string;
+    githubId?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+  accessToken?: string;
+}
+
+interface ExtendedToken extends JWT {
+  githubId?: string;
+  accessToken?: string;
+}
+
+interface GitHubProfile extends Profile {
+  login: string;
+  avatar_url?: string;
+}
+
+export const authOptions: NextAuthOptions = {
   providers: [
     GitHub({
       clientId: process.env.GITHUB_ID!,
@@ -14,20 +39,20 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ account, profile }: any) {
-      if (account?.provider === "github" && profile) {
-        //github認証成功時の処理→userテーブルにデータを保存
+    async signIn({ account, profile }) {
+      const githubProfile = profile as GitHubProfile | undefined;
+      if (account?.provider === "github" && githubProfile) {
         try {
           await prisma.user.upsert({
-            where: { githubId: profile.login as string },
+            where: { githubId: githubProfile.login },
             update: {
-              name: profile.name || null,
-              avatarUrl: profile.avatar_url || null,
+              name: githubProfile.name || null,
+              avatarUrl: githubProfile.avatar_url || null,
             },
             create: {
-              githubId: profile.login as string,
-              name: profile.name || null,
-              avatarUrl: profile.avatar_url || null,
+              githubId: githubProfile.login,
+              name: githubProfile.name || null,
+              avatarUrl: githubProfile.avatar_url || null,
             },
           });
         } catch (error) {
@@ -37,31 +62,37 @@ export const authOptions = {
       }
       return true;
     },
-    async session({ session, token }: any) {
-      if (session.user && token.githubId) {
+    async session({ session, token }) {
+      const extendedSession = session as ExtendedSession;
+      const extendedToken = token as ExtendedToken;
+
+      if (extendedSession.user && extendedToken.githubId) {
         try {
           const user = await prisma.user.findUnique({
-            where: { githubId: token.githubId },
+            where: { githubId: extendedToken.githubId },
           });
           if (user) {
-            session.user.id = user.id;
-            session.user.githubId = user.githubId;
+            extendedSession.user.id = user.id;
+            extendedSession.user.githubId = user.githubId;
           }
         } catch (error) {
           console.error("セッション取得エラー:", error);
         }
       }
-      if (token.accessToken) {
-        session.accessToken = token.accessToken;
+      if (extendedToken.accessToken) {
+        extendedSession.accessToken = extendedToken.accessToken;
       }
-      return session;
+      return extendedSession;
     },
-    async jwt({ token, account, profile }: any) {
-      if (account && profile) {
-        token.githubId = profile.login;
-        token.accessToken = account.access_token;
+    async jwt({ token, account, profile }) {
+      const extendedToken = token as ExtendedToken;
+      const githubProfile = profile as GitHubProfile | undefined;
+
+      if (account && githubProfile) {
+        extendedToken.githubId = githubProfile.login;
+        extendedToken.accessToken = account.access_token;
       }
-      return token;
+      return extendedToken;
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
