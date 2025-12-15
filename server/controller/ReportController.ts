@@ -7,7 +7,7 @@ import { CreateReportInput } from "@/types/report";
 export class ReportController {
     private reportUsecase: ReportUseCase;
     constructor(reportUsecase?: ReportUseCase) {
-    this.reportUsecase = new ReportUseCase() ?? new ReportUseCase();
+    this.reportUsecase = reportUsecase ?? new ReportUseCase();
   }
   /**
    * 日報を作成
