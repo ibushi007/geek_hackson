@@ -52,7 +52,7 @@ export class ReportController {
       const reports = await reportUseCase.showReports(session.user.id);
 
       // Spring Bootでいう ResponseEntity.ok(body) です
-      return NextResponse.json({ reports });
+      return NextResponse.json(reports, { status: 200 });
     } catch (error) {
       console.error("Error fetching reports:", error);
       return NextResponse.json(
