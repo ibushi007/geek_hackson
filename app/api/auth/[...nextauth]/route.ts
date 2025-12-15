@@ -1,7 +1,15 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GitHub from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
-export const authOptions = {
+
+// GitHub固有のprofile型
+interface GitHubProfile {
+  login: string;
+  name?: string;
+  avatar_url?: string;
+}
+
+export const authOptions: NextAuthOptions = {
   providers: [
     GitHub({
       clientId: process.env.GITHUB_ID!,
@@ -14,20 +22,20 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ account, profile }: any) {
+    async signIn({ account, profile }) {
       if (account?.provider === "github" && profile) {
-        //github認証成功時の処理→userテーブルにデータを保存
+        const githubProfile = profile as GitHubProfile;
         try {
           await prisma.user.upsert({
-            where: { githubId: profile.login as string },
+            where: { githubId: githubProfile.login },
             update: {
-              name: profile.name || null,
-              avatarUrl: profile.avatar_url || null,
+              name: githubProfile.name || null,
+              avatarUrl: githubProfile.avatar_url || null,
             },
             create: {
-              githubId: profile.login as string,
-              name: profile.name || null,
-              avatarUrl: profile.avatar_url || null,
+              githubId: githubProfile.login,
+              name: githubProfile.name || null,
+              avatarUrl: githubProfile.avatar_url || null,
             },
           });
         } catch (error) {
@@ -37,28 +45,30 @@ export const authOptions = {
       }
       return true;
     },
-    async session({ session, token }: any) {
-      if (session.user && token.githubId) {
+    async session({ session, token }) {
+      const githubId = token.githubId as string | undefined;
+      if (session.user && githubId) {
         try {
           const user = await prisma.user.findUnique({
-            where: { githubId: token.githubId },
+            where: { githubId },
           });
           if (user) {
-            session.user.id = user.id;
-            session.user.githubId = user.githubId;
+            (session.user as { id?: string; githubId?: string }).id = user.id;
+            (session.user as { id?: string; githubId?: string }).githubId = user.githubId;
           }
         } catch (error) {
           console.error("セッション取得エラー:", error);
         }
       }
       if (token.accessToken) {
-        session.accessToken = token.accessToken;
+        (session as { accessToken?: string }).accessToken = token.accessToken as string;
       }
       return session;
     },
-    async jwt({ token, account, profile }: any) {
+    async jwt({ token, account, profile }) {
       if (account && profile) {
-        token.githubId = profile.login;
+        const githubProfile = profile as GitHubProfile;
+        token.githubId = githubProfile.login;
         token.accessToken = account.access_token;
       }
       return token;

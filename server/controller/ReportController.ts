@@ -4,9 +4,11 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { ReportUseCase } from "@/server/usecases/ReportUseCase";
 import { CreateReportInput } from "@/types/report";
 
-const reportUseCase = new ReportUseCase();
-
 export class ReportController {
+    private reportUsecase: ReportUseCase;
+    constructor(reportUsecase?: ReportUseCase) {
+    this.reportUsecase = reportUsecase ?? new ReportUseCase();
+  }
   /**
    * 日報を作成
    * @param request リクエスト
@@ -27,8 +29,8 @@ export class ReportController {
         );
       }
 
-      const report = await reportUseCase.createReport(session.user.id, body);
-      return NextResponse.json(report, { status: 200 });
+      const report = await this.reportUsecase.createReport(session.user.id, body);
+      return NextResponse.json(report, { status: 201 });
     } catch (error) {
       console.error("Report creation failed:", error);
       return NextResponse.json(
@@ -49,7 +51,7 @@ export class ReportController {
       if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      const reports = await reportUseCase.showReports(session.user.id);
+      const reports = await this.reportUsecase.showReports(session.user.id);
 
       // Spring Bootでいう ResponseEntity.ok(body) です
       return NextResponse.json(reports, { status: 200 });
