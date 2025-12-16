@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -35,6 +36,7 @@ const titleSuggestions = [
 ];
 
 export default function NewLogPage() {
+  const router = useRouter();
   const [title, setTitle] = useState(titleSuggestions[0]);
   const [todayLearning, setTodayLearning] = useState("");
   const [struggles, setStruggles] = useState("");
@@ -47,11 +49,41 @@ export default function NewLogPage() {
       return;
     }
     setIsSubmitting(true);
-    // API呼び出しの代わりに遅延
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    // 完了後に遷移
-    window.location.href = "/dashboard";
+    
+    try {
+      // 日報データを作成してAPIに送信
+      const reportData = {
+        githubUrl: "https://github.com/example/repo", // モックデータ
+        dailyNote: `${title}\n\n💡 今日の学び: ${todayLearning}${struggles ? `\n😵 詰まったところ: ${struggles}` : ""}${tomorrow ? `\n🎯 明日やること: ${tomorrow}` : ""}`,
+        diffCount: `+${mockGitHubData.linesChanged}`,
+        aiScore: 85,
+        aiGoodPoints: mockGitHubData.autoSummary,
+        aiBadPoints: struggles || "特になし",
+        aiStudyTime: "2時間30分",
+        workDurationSec: 9000,
+      };
+
+      const response = await fetch("/api/reports/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reportData),
+      });
+
+      if (!response.ok) {
+        throw new Error("日報の保存に失敗しました");
+      }
+
+      const savedReport = await response.json();
+      
+      // 保存成功後、詳細画面に遷移
+      router.push(`/log/${savedReport.id}`);
+    } catch (error) {
+      console.error("Error saving report:", error);
+      alert("日報の保存に失敗しました。もう一度お試しください。");
+      setIsSubmitting(false);
+    }
   };
 
   return (
