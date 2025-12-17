@@ -1,34 +1,41 @@
+export type TechTag = {
+  name: string;
+  isNew: boolean;
+}
+
 export type CreateReportInput = {
-  workDurationSec?: number;
+  title: string;
+  todayLearning: string;
+  struggles?: string;
+  tomorrow?: string;
   githubUrl: string;
-  dailyNote: string;
-  diffCount: string;
-  aiScore: number;
-  aiGoodPoints: string;
-  aiBadPoints: string;
-  aiStudyTime?: string;
+  prCount: number;
+  commitCount: number;
+  linesChanged: number;
+  changeSize: string;
+  prSummary: string;
+  aiCoachComment?: string;
+  techTags?: TechTag[];
 };
 
 export type ReportResponse = {
   id: string;
+  userId: string;
   createdAt: Date;
-  workDurationSec: number | null;
+  title: string;
+  todayLearning: string;
+  struggles?: string | null;
+  tomorrow?: string | null;
   githubUrl: string;
-  aiScore: number;
-  aiGoodPoints: string;
-  aiBadPoints: string;
-  aiStudyTime: string | null;
+  prCount: number;
+  commitCount: number;
+  linesChanged: number;
+  changeSize: string;
+  prSummary: string;
+  aiCoachComment?: string | null;
+  techTags?: TechTag[] | null;
 };
 
 export type ShowReportsResponse = {
-  reports: Array<{
-    id: string;
-    createdAt: string; // ISO 8601形式
-    workDurationSec: number | null;
-    githubUrl: string;
-    aiScore: number;
-    aiGoodPoints: string;
-    aiBadPoints: string;
-    aiStudyTime: string | null;
-  }>;
+  reports: ReportResponse[];
 };
