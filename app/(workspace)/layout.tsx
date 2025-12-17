@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Toaster } from "sonner";
 import { MobileNav } from "@/components/MobileNav";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
@@ -14,6 +15,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
         </main>
       </div>
       <MobileNav />
+      <Toaster position="top-center" richColors />
     </div>
   );
 }

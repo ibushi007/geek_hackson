@@ -2,28 +2,29 @@
 // Mock Data for Developer Studyplus
 // ========================================
 
-export type TechTag = {
-  name: string;
-  isNew: boolean; // 初めて使った技術
-};
+import type { TechTag, ChangeSize } from "@/types/report";
+
+export type { TechTag };
 
 export type LearningLog = {
   id: string;
-  date: string; // YYYY-MM-DD
+  userId: string;
+  createdAt: Date;
   // Auto-generated (80%)
   title: string; // LLM生成タイトル
   prCount: number;
   commitCount: number;
   linesChanged: number;
-  changeSize: "S" | "M" | "L";
+  changeSize: ChangeSize;
   techTags: TechTag[];
   prSummary: string; // LLM整形された作業内容
+  githubUrl: string;
   // Manual input (20%)
   todayLearning: string; // 今日の学び（必須）
   struggles?: string; // 詰まったところ（任意）
   tomorrow?: string; // 明日やること（任意）
   // AI Coach comment
-  aiCoachComment: string;
+  aiCoachComment?: string;
 };
 
 export type WeeklyDigest = {
@@ -61,12 +62,14 @@ export const user = {
 export const learningLogs: LearningLog[] = [
   {
     id: "log-001",
-    date: "2025-12-16",
+    userId: "user-001",
+    createdAt: new Date("2025-12-16"),
     title: "🔐 認証フローを一段深く理解した日",
     prCount: 2,
     commitCount: 8,
     linesChanged: 240,
     changeSize: "M",
+    githubUrl: "https://github.com/example/auth-implementation",
     techTags: [
       { name: "NextAuth", isNew: true },
       { name: "Prisma", isNew: false },
@@ -82,12 +85,14 @@ export const learningLogs: LearningLog[] = [
   },
   {
     id: "log-002",
-    date: "2025-12-15",
+    userId: "user-001",
+    createdAt: new Date("2025-12-15"),
     title: "🗃️ データ設計を見直した集中の日",
     prCount: 1,
     commitCount: 5,
     linesChanged: 156,
     changeSize: "M",
+    githubUrl: "https://github.com/example/schema-refactor",
     techTags: [
       { name: "Prisma", isNew: false },
       { name: "PostgreSQL", isNew: true },
@@ -102,12 +107,14 @@ export const learningLogs: LearningLog[] = [
   },
   {
     id: "log-003",
-    date: "2025-12-14",
+    userId: "user-001",
+    createdAt: new Date("2025-12-14"),
     title: "⚡ 環境構築を乗り越えた日",
     prCount: 1,
     commitCount: 12,
     linesChanged: 89,
     changeSize: "S",
+    githubUrl: "https://github.com/example/initial-setup",
     techTags: [
       { name: "Next.js", isNew: false },
       { name: "Tailwind CSS", isNew: false },
