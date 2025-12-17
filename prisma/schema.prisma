@@ -25,23 +25,29 @@ model User {
 
 //まずこのデイリーレポートテーブルを理解しましょう
 model DailyReport {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now())
+  
+  // ========== 基本情報 ==========
+  title           String            // 🆕 日報タイトル
+  todayLearning   String            // 🆕 今日の学び
+  struggles       String?           // 詰まったところ（任意）
+  tomorrow        String?           // 明日やること(任意)
 
-  createdAt DateTime @default(now())
-
-  // 1. 作業記録
-  workDurationSec Int?          // 作業時間（秒）
-  githubUrl       String       // PR / コミットのURL
-  dailyNote       String       //日報の内容
-
-  // 2. GitHub連携（数値だけ持つ）
-  diffCount     String         // diffの内容
-
-  // 3. AI評価（決まった項目に分けて保存）
-  aiScore      Int         // 0-100 など
-  aiGoodPoints String         // 良かった点
-  aiBadPoints  String         // 改善点・課題
-  aiStudyTime  String?         // 学習時間コメントなど
+  
+  // ========== GitHub統計 ==========
+  githubUrl       String            // GitHub URL（既存）
+  prCount         Int     @default(0)     // 🆕 PR数
+  commitCount     Int     @default(0)     // 🆕 コミット数
+  linesChanged    Int     @default(0)     // 🆕 変更行数
+  changeSize      String  @default("M")   // 🆕 変更規模（S/M/L）
+  
+  // ========== AI生成コンテンツ ==========
+  prSummary       String            // 🆕 PR要約
+  aiCoachComment  String?           // 🆕 AIコーチコメント
+  
+  // ========== 技術タグ ==========
+  techTags        Json?             // 🆕 [{ name: "Next.js", isNew: true }]
 }
