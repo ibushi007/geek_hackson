@@ -14,7 +14,7 @@ export type CreateReportInput = {
   prCount: number;                
   commitCount: number;             
   linesChanged: number;            
-  changeSize: string;            
+  changeSize: ChangeSize;            
   prSummary: string;          
   aiCoachComment?: string;   
   techTags?: TechTag[];  
@@ -32,7 +32,7 @@ export type ReportResponse = {
   prCount: number;
   commitCount: number;
   linesChanged: number;
-  changeSize: string;
+  changeSize: ChangeSize;
   prSummary: string;
   aiCoachComment?: string | null;
   techTags?: TechTag[] | null;
