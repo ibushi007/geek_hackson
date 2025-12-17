@@ -46,7 +46,7 @@ export default function LogDetailPage() {
       {/* Header */}
       <div>
         <p className="text-sm font-semibold text-slate-500">
-          {formatDate(log.date)}
+          {formatDate(log.createdAt)}
         </p>
         <h1 className="mt-1 text-3xl font-bold text-slate-900">{log.title}</h1>
       </div>
@@ -178,21 +178,23 @@ export default function LogDetailPage() {
       </div>
 
       {/* AI Coach Comment */}
-      <div className="glass-card rounded-2xl p-5">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-teal-100">
-            <span className="text-lg">🤖</span>
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-emerald-700">
-              AI Learning Coach
-            </p>
-            <p className="mt-1 leading-relaxed text-slate-600">
-              {log.aiCoachComment}
-            </p>
+      {log.aiCoachComment && (
+        <div className="glass-card rounded-2xl p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-teal-100">
+              <span className="text-lg">🤖</span>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-emerald-700">
+                AI Learning Coach
+              </p>
+              <p className="mt-1 leading-relaxed text-slate-600">
+                {log.aiCoachComment}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* AI Coach Widget */}
       <AICoach message="詳細を見返すことで、学びがより深まりますね！" />
@@ -200,8 +202,7 @@ export default function LogDetailPage() {
   );
 }
 
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
+function formatDate(date: Date) {
   return date.toLocaleDateString("ja-JP", {
     year: "numeric",
     month: "long",

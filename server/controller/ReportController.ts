@@ -10,33 +10,67 @@ export class ReportController {
     this.reportUsecase = reportUsecase ?? new ReportUseCase();
   }
   /**
+   * 認証チェック（共通処理）
+   * @returns ユーザーIDまたはエラーレスポンス
+   */
+  private async authenticate(): Promise<
+    { userId: string } | { error: NextResponse }
+  > {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return {
+        error: NextResponse.json(
+          { error: "Unauthorized" },
+          { status: 401 }
+        ),
+      };
+    }
+    return { userId: session.user.id };
+  }
+
+  /**
+   * エラーハンドリング（共通処理）
+   */
+  private handleError(error: unknown, context: string): NextResponse {
+    console.error(`${context} failed:`, error);
+    
+    if (error instanceof Error) {
+      // エラーメッセージに応じてステータスコードを変更
+      if (error.message === "Report not found") {
+        return NextResponse.json(
+          { error: "Report not found" },
+          { status: 404 }
+        );
+      }
+      if (error.message.includes("required")) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 400 }
+        );
+      }
+    }
+
+    return NextResponse.json(
+      { error: `Failed to ${context.toLowerCase()}` },
+      { status: 500 }
+    );
+  }
+
+  /**
    * 日報を作成
    * @param request リクエスト
    * @returns 日報
    */
   async createReport(request: NextRequest) {
     try {
-      const session = await getServerSession(authOptions);
-      if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-
+      const auth = await this.authenticate();
+      if ("error" in auth) return auth.error;
       const body = (await request.json()) as CreateReportInput;
-      if (!body.githubUrl) {
-        return NextResponse.json(
-          { error: "Github URL is required" },
-          { status: 400 },
-        );
-      }
-
-      const report = await this.reportUsecase.createReport(session.user.id, body);
+      const report = await this.reportUsecase.createReport(auth.userId, body);
       return NextResponse.json(report, { status: 201 });
     } catch (error) {
-      console.error("Report creation failed:", error);
-      return NextResponse.json(
-        { error: "Failed to create report" },
-        { status: 500 },
-      );
+      return this.handleError(error, "Report creation");
     }
   }
 
@@ -46,21 +80,33 @@ export class ReportController {
    */
   async showReports() {
     try {
-      const session = await getServerSession(authOptions);
-
-      if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-      const reports = await this.reportUsecase.showReports(session.user.id);
-
-      // Spring Bootでいう ResponseEntity.ok(body) です
+      const auth = await this.authenticate();
+      if ("error" in auth) return auth.error;
+      const reports = await this.reportUsecase.showReports(auth.userId);
       return NextResponse.json(reports, { status: 200 });
     } catch (error) {
-      console.error("Error fetching reports:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch reports" },
-        { status: 500 },
-      );
+        return this.handleError(error, "Fetch reports");
+    }
+  }
+
+  async getReportById(id: string) {
+    try {
+      const auth = await this.authenticate();
+      if ("error" in auth) return auth.error;
+      
+      const report = await this.reportUsecase.getReportById(id);
+
+      //権限チェック
+      if (report.userId !== auth.userId) {
+        return NextResponse.json(
+          { error: "Forbidden" },
+          { status: 403 }
+        );
+      }
+      
+      return NextResponse.json(report, { status: 200 });
+    } catch (error) {
+      return this.handleError(error, "Fetch report by id");
     }
   }
 }

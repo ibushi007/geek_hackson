@@ -16,7 +16,7 @@ export function LogCard({ log }: Props) {
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm font-semibold text-slate-500">
-            {formatDate(log.date)}
+            {formatDate(log.createdAt)}
           </p>
           <h3 className="mt-1 text-lg font-bold text-slate-900">{log.title}</h3>
         </div>
@@ -70,18 +70,19 @@ export function LogCard({ log }: Props) {
       </div>
 
       {/* AI Coach Comment */}
-      <div className="mt-3 flex items-start gap-2 rounded-xl bg-emerald-50 p-3">
-        <span className="text-sm">🤖</span>
-        <p className="text-xs leading-relaxed text-emerald-700">
-          {log.aiCoachComment}
-        </p>
-      </div>
+      {log.aiCoachComment && (
+        <div className="mt-3 flex items-start gap-2 rounded-xl bg-emerald-50 p-3">
+          <span className="text-sm">🤖</span>
+          <p className="text-xs leading-relaxed text-emerald-700">
+            {log.aiCoachComment}
+          </p>
+        </div>
+      )}
     </Link>
   );
 }
 
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
+function formatDate(date: Date) {
   return date.toLocaleDateString("ja-JP", {
     month: "short",
     day: "numeric",

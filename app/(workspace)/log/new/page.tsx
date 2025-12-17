@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { CreateReportInput } from "@/types/report";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -9,7 +10,9 @@ import {
   Code2,
   Sparkles,
   Clock,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { AICoach } from "@/components/AICoach";
 import { aiCoachMessages } from "@/lib/mock";
 
@@ -18,7 +21,7 @@ const mockGitHubData = {
   prCount: 2,
   commitCount: 8,
   linesChanged: 240,
-  changeSize: "M" as const,
+  changeSize: "M" as "S" | "M" | "L",
   techTags: [
     { name: "NextAuth", isNew: true },
     { name: "Prisma", isNew: false },
@@ -44,23 +47,36 @@ export default function NewLogPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!todayLearning.trim()) {
-      alert("「今日の学び」は必須です！");
+    // バリデーション
+    if (!title.trim()) {
+      toast.error("タイトルを選択してください");
       return;
     }
+    if (!todayLearning.trim()) {
+      toast.error("「今日の学び」は必須項目です");
+      return;
+    }
+    if (todayLearning.trim().length < 5) {
+      toast.error("「今日の学び」は5文字以上入力してください");
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
       // 日報データを作成してAPIに送信
-      const reportData = {
-        githubUrl: "https://github.com/example/repo", // モックデータ
-        dailyNote: `${title}\n\n💡 今日の学び: ${todayLearning}${struggles ? `\n😵 詰まったところ: ${struggles}` : ""}${tomorrow ? `\n🎯 明日やること: ${tomorrow}` : ""}`,
-        diffCount: `+${mockGitHubData.linesChanged}`,
-        aiScore: 85,
-        aiGoodPoints: mockGitHubData.autoSummary,
-        aiBadPoints: struggles || "特になし",
-        aiStudyTime: "2時間30分",
-        workDurationSec: 9000,
+      const reportData: CreateReportInput = {
+        title: title,
+        todayLearning: todayLearning,
+        struggles: struggles || undefined,
+        tomorrow: tomorrow || undefined,
+        githubUrl: "https://github.com/example/repo",
+        prCount: mockGitHubData.prCount,
+        commitCount: mockGitHubData.commitCount,
+        linesChanged: mockGitHubData.linesChanged,
+        changeSize: mockGitHubData.changeSize,
+        prSummary: mockGitHubData.autoSummary,
+        techTags: mockGitHubData.techTags,
       };
 
       const response = await fetch("/api/reports/create", {
@@ -72,16 +88,26 @@ export default function NewLogPage() {
       });
 
       if (!response.ok) {
-        throw new Error("日報の保存に失敗しました");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "日報の保存に失敗しました");
       }
 
       const savedReport = await response.json();
       
+      // 成功通知
+      toast.success("日報を保存しました！");
+      
       // 保存成功後、詳細画面に遷移
-      router.push(`/log/${savedReport.id}`);
+      setTimeout(() => {
+        router.push(`/log/${savedReport.id}`);
+      }, 500);
     } catch (error) {
       console.error("Error saving report:", error);
-      alert("日報の保存に失敗しました。もう一度お試しください。");
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : "日報の保存に失敗しました。もう一度お試しください"
+      );
       setIsSubmitting(false);
     }
   };
@@ -265,10 +291,13 @@ export default function NewLogPage() {
         <button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-emerald-200 transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-emerald-200 transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? (
-            "保存中..."
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              保存中...
+            </>
           ) : (
             <>
               保存する
