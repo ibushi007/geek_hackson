@@ -77,4 +77,8 @@ export class ReportUseCase {
 
     return report;
   }
+
+  async deleteReport(id: string): Promise<void> {
+    await reportRepository.delete(id);
+  }
 }
