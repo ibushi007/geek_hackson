@@ -109,4 +109,31 @@ export class ReportController {
       return this.handleError(error, "Fetch report by id");
     }
   }
+
+  async updateReport(id: string, body: Partial<CreateReportInput>) {
+    try {
+      const auth = await this.authenticate();
+      if ("error" in auth) return auth.error;
+
+      const existingReport = await this.reportUsecase.getReportById(id);
+
+      //権限チェック
+      if (existingReport.userId !== auth.userId) {
+        return NextResponse.json(
+          { error: "Forbidden" },
+          { status: 403 }
+        );
+    }
+    
+    //更新実行
+    const updatedReport = await this.reportUsecase.updateReport(
+      id,
+      body
+    );
+
+    return NextResponse.json(updatedReport, { status: 200 });
+  } catch (error) {
+    return this.handleError(error, "Update report");
+  }
+}
 }

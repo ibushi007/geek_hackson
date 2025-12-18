@@ -56,4 +56,25 @@ export class ReportUseCase {
 
     return report;
   }
+
+  async updateReport(
+    id: string, 
+    body: Partial<CreateReportInput>
+  ): Promise<ReportResponse> {
+
+    if (body.title && body.title.length > 300) {
+      throw new Error("title must be less than 300 characters");
+    }
+
+    if (body.todayLearning && body.todayLearning.length > 1000) {
+      throw new Error("todayLearning must be less than 1000 characters");
+    }
+    
+    const report = await reportRepository.update(id, body);
+    if (!report) {
+      throw new Error("Report not found");
+    }
+
+    return report;
+  }
 }
