@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -10,22 +11,66 @@ import {
   Clock,
 } from "lucide-react";
 import { AICoach } from "@/components/AICoach";
-import { learningLogs } from "@/lib/mock";
+import type { ReportResponse } from "@/types/report";
 
 export default function LogDetailPage() {
   const params = useParams();
   const logId = params.id as string;
 
-  const log = learningLogs.find((l) => l.id === logId);
+  const [log, setLog] = useState<ReportResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!log) {
+  useEffect(() => {
+    const fetchLog = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(`/api/reports/${logId}`);
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("日報が見つかりませんでした");
+          }
+          if (response.status === 403) {
+            throw new Error("この日報を閲覧する権限がありません");
+          }
+          throw new Error("日報の取得に失敗しました");
+        }
+
+        const data = await response.json();
+        setLog(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "エラーが発生しました");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLog();
+  }, [logId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
+          <p className="mt-4 text-sm text-slate-500">読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !log) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center">
-        <p className="text-lg text-slate-500">ログが見つかりませんでした</p>
+        <p className="text-lg text-red-600">{error || "日報が見つかりませんでした"}</p>
         <Link
           href="/dashboard"
-          className="mt-4 text-sm font-semibold text-emerald-600 hover:underline"
+          className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
         >
+          <ArrowLeft size={16} />
           ダッシュボードに戻る
         </Link>
       </div>
@@ -120,7 +165,7 @@ export default function LogDetailPage() {
           🏷️ 使用技術
         </h3>
         <div className="flex flex-wrap gap-2">
-          {log.techTags.map((tag) => (
+          {(log.techTags || []).map((tag) => (
             <span
               key={tag.name}
               className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
@@ -202,7 +247,8 @@ export default function LogDetailPage() {
   );
 }
 
-function formatDate(date: Date) {
+function formatDate(dateString: string | Date) {
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
   return date.toLocaleDateString("ja-JP", {
     year: "numeric",
     month: "long",

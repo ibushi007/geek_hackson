@@ -1,12 +1,42 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PenLine, TrendingUp, Zap } from "lucide-react";
 import Link from "next/link";
 import { LogCard } from "@/components/LogCard";
 import { AICoach } from "@/components/AICoach";
-import { learningLogs, user, growthData, aiCoachMessages } from "@/lib/mock";
+import { user, growthData, aiCoachMessages } from "@/lib/mock";
+import type { ReportResponse, ShowReportsResponse } from "@/types/report";
 
 export default function DashboardPage() {
+  const [reports, setReports] = useState<ReportResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch("/api/reports");
+
+        if (!response.ok) {
+          throw new Error("日報の取得に失敗しました");
+        }
+
+        const data: ShowReportsResponse = await response.json();
+        setReports(data.reports);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "エラーが発生しました");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -90,9 +120,30 @@ export default function DashboardPage() {
           </Link>
         </div>
         <div className="space-y-4">
-          {learningLogs.map((log) => (
-            <LogCard key={log.id} log={log} />
-          ))}
+          {isLoading ? (
+            <div className="flex min-h-[200px] items-center justify-center">
+              <div className="text-center">
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
+                <p className="mt-4 text-sm text-slate-500">読み込み中...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="flex min-h-[200px] items-center justify-center">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          ) : reports.length === 0 ? (
+            <div className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50">
+              <p className="text-sm text-slate-500">まだ日報がありません</p>
+              <Link
+                href="/log/new"
+                className="mt-3 text-sm font-semibold text-emerald-600 hover:underline"
+              >
+                最初の日報を書く →
+              </Link>
+            </div>
+          ) : (
+            reports.map((log) => <LogCard key={log.id} log={log} />)
+          )}
         </div>
       </div>
 
