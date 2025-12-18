@@ -1,12 +1,62 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PenLine, TrendingUp, Zap } from "lucide-react";
 import Link from "next/link";
 import { LogCard } from "@/components/LogCard";
 import { AICoach } from "@/components/AICoach";
-import { learningLogs, user, growthData, aiCoachMessages } from "@/lib/mock";
+import { learningLogs, user, aiCoachMessages } from "@/lib/mock";
+import type { GrowthData } from "@/lib/mock";
 
 export default function DashboardPage() {
+  const [growthData, setGrowthData] = useState<GrowthData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/growth')
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('データの取得に失敗しました');
+        }
+        return res.json();
+      })
+      .then(data => {
+        setGrowthData(data);
+        setError(null);
+      })
+      .catch(error => {
+        console.error('Failed to fetch growth data:', error);
+        setError(error.message);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+  // ローディング状態
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-sm text-slate-500">データを読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // エラー状態
+  if (error || !growthData) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-500 mb-2">エラーが発生しました</p>
+          <p className="text-sm text-slate-500">{error || 'データが見つかりませんでした'}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
