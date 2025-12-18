@@ -113,7 +113,7 @@ export default function DashboardPage() {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-900">最近の学習ログ</h2>
           <Link
-            href="/growth"
+            href="/logs"
             className="text-sm font-semibold text-emerald-600 hover:underline"
           >
             すべて見る →
