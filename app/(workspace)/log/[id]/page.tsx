@@ -9,6 +9,7 @@ import {
   Code2,
   Sparkles,
   Clock,
+  Pencil,
 } from "lucide-react";
 import { AICoach } from "@/components/AICoach";
 import type { ReportResponse } from "@/types/report";
@@ -89,11 +90,22 @@ export default function LogDetailPage() {
       </Link>
 
       {/* Header */}
-      <div>
-        <p className="text-sm font-semibold text-slate-500">
-          {formatDate(log.createdAt)}
-        </p>
-        <h1 className="mt-1 text-3xl font-bold text-slate-900">{log.title}</h1>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-slate-500">
+            {formatDate(log.createdAt)}
+          </p>
+          <h1 className="mt-1 text-3xl font-bold text-slate-900">{log.title}</h1>
+        </div>
+        
+        {/* Edit Button */}
+        <Link
+          href={`/log/${logId}/edit`}
+          className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600"
+        >
+          <Pencil size={16} />
+          編集
+        </Link>
       </div>
 
       {/* Stats */}
