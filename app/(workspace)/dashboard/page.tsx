@@ -1,12 +1,50 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PenLine, TrendingUp, Zap } from "lucide-react";
 import Link from "next/link";
 import { LogCard } from "@/components/LogCard";
 import { AICoach } from "@/components/AICoach";
-import { learningLogs, user, growthData, aiCoachMessages } from "@/lib/mock";
+import { learningLogs, user, growthData as mockGrowthData, aiCoachMessages } from "@/lib/mock";
+import type { GrowthData } from "@/types/growth";
 
 export default function DashboardPage() {
+  const [growthData, setGrowthData] = useState<GrowthData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGrowthData = async () => {
+      try {
+        const response = await fetch("/api/growth");
+        if (!response.ok) {
+          throw new Error("Failed to fetch growth data");
+        }
+        const data: GrowthData = await response.json();
+        setGrowthData(data);
+      } catch (error) {
+        console.error("Error fetching growth data:", error);
+        // エラー時はモックデータを使用
+        setGrowthData({
+          weeklyCommits: mockGrowthData.weeklyCommits,
+          streak: mockGrowthData.streak,
+          momentum: mockGrowthData.momentum,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGrowthData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-slate-500">読み込み中...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -38,7 +76,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">学習ストリーク</p>
               <p className="text-2xl font-bold text-slate-900">
-                {growthData.streak}日連続
+                {growthData?.streak ?? 0}日連続
               </p>
             </div>
           </div>
@@ -52,7 +90,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">Learning Momentum</p>
               <p className="text-2xl font-bold text-slate-900">
-                {growthData.momentum}
+                {growthData?.momentum ?? 0}
                 <span className="text-sm font-normal text-slate-500">/100</span>
               </p>
             </div>
@@ -67,7 +105,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">今週のコミット</p>
               <p className="text-2xl font-bold text-slate-900">
-                {growthData.weeklyCommits.reduce((a, b) => a + b.value, 0)}
+                {growthData?.weeklyCommits.reduce((a, b) => a + b.value, 0) ?? 0}
                 <span className="text-sm font-normal text-slate-500">
                   {" "}
                   commits

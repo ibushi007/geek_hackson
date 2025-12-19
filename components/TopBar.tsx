@@ -1,9 +1,32 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Flame, Github } from "lucide-react";
 import { user } from "@/lib/mock";
+import type { GrowthData } from "@/types/growth";
 
 export function TopBar() {
+  const [streak, setStreak] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchGrowthData = async () => {
+      try {
+        const response = await fetch("/api/growth");
+        if (!response.ok) {
+          throw new Error("Failed to fetch growth data");
+        }
+        const data: GrowthData = await response.json();
+        setStreak(data.streak);
+      } catch (error) {
+        console.error("Error fetching growth data:", error);
+        // エラー時はモックデータを使用
+        setStreak(user.streak);
+      }
+    };
+
+    fetchGrowthData();
+  }, []);
+
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200/60 bg-white/80 px-4 backdrop-blur-md lg:px-10">
       {/* Left: Mobile logo */}
@@ -21,7 +44,7 @@ export function TopBar() {
         {/* Streak Badge */}
         <div className="flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-600">
           <Flame size={16} className="streak-fire text-orange-500" />
-          <span>{user.streak}日連続</span>
+          <span>{streak !== null ? streak : user.streak}日連続</span>
         </div>
 
         {/* User Avatar */}
