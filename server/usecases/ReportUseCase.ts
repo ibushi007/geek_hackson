@@ -27,6 +27,15 @@ export class ReportUseCase {
       throw new Error("githubUrl is required");
     }
 
+    const today = new Date().toISOString().split('T')[0];
+    const existingReport = await reportRepository.findByUserIdAndDate(
+      userId,
+      today
+    );
+
+    if (existingReport) {
+      throw new Error("Daily report already exists for today");
+    }
     // Repositoryを呼び出し（新しいフィールドに対応済み）
     const report = await reportRepository.create(userId, input);
 
