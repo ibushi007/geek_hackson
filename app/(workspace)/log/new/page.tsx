@@ -242,12 +242,19 @@ export default function NewLogPage() {
         router.push(`/log/${savedReport.id}`);
       }, 500);
     } catch (error) {
-      console.error("Error saving report:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "日報の保存に失敗しました。もう一度お試しください",
-      );
+      console.error("Failed to submit report:", error);
+      const errorMessage = 
+        error instanceof Error 
+          ? error.message 
+          : "日報の作成に失敗しました";
+      
+      // エラーメッセージを日本語化
+      if (errorMessage.includes("already exists") || errorMessage.includes("Failed to report creation")) {
+        toast.error("今日の日報はすでに存在します。編集画面から修正してください。");
+      } else {
+        toast.error(errorMessage);
+      }
+    } finally {
       setIsSubmitting(false);
     }
   };

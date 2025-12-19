@@ -29,6 +29,13 @@ export function handleError(error: unknown, context: string): NextResponse {
   console.error(`${context} failed:`, error);
 
   if (error instanceof Error) {
+    // 日報の重複エラー
+    if (error.message.includes("already exists for today")) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 409 }
+      );
+    }
     // エラーメッセージに応じてステータスコードを変更
     if (error.message === "Report not found") {
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
