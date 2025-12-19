@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   GitPullRequest,
   Code2,
@@ -9,9 +10,59 @@ import {
   Star,
 } from "lucide-react";
 import { AICoach } from "@/components/AICoach";
-import { weeklyDigest, aiCoachMessages } from "@/lib/mock";
+import { aiCoachMessages } from "@/lib/mock";
+import type { WeeklyDigest } from "@/lib/mock";
 
 export default function WeeklyPage() {
+  const [weeklyDigestData, setWeeklyDigestData] = useState<WeeklyDigest | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/weekly')
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('週次データの取得に失敗しました');
+        }
+        return res.json();
+      })
+      .then(data => {
+        setWeeklyDigestData(data);
+        setError(null);
+      })
+      .catch(error => {
+        console.error('Failed to fetch weekly digest:', error);
+        setError(error.message);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  // ローディング状態
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-sm text-slate-500">週次データを読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // エラー状態
+  if (error || !weeklyDigestData) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-500 mb-2">エラーが発生しました</p>
+          <p className="text-sm text-slate-500">{error || 'データが見つかりませんでした'}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -23,7 +74,7 @@ export default function WeeklyPage() {
           </h1>
         </div>
         <p className="text-sm text-slate-500">
-          {weeklyDigest.weekLabel}の振り返りレポート
+          {weeklyDigestData.weekLabel}の振り返りレポート
         </p>
       </div>
 
@@ -42,7 +93,7 @@ export default function WeeklyPage() {
             </div>
             <div className="flex-1">
               <p className="whitespace-pre-line text-base leading-relaxed text-slate-700">
-                {weeklyDigest.aiMessage}
+                {weeklyDigestData.aiMessage}
               </p>
               <div className="mt-4 rounded-xl bg-emerald-50 p-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
@@ -50,7 +101,7 @@ export default function WeeklyPage() {
                   今週の提案
                 </p>
                 <p className="mt-1 text-sm text-emerald-600">
-                  {weeklyDigest.suggestion}
+                  {weeklyDigestData.suggestion}
                 </p>
               </div>
             </div>
@@ -63,7 +114,7 @@ export default function WeeklyPage() {
         <div className="glass-card rounded-2xl p-5 text-center">
           <GitPullRequest size={24} className="mx-auto text-emerald-500" />
           <p className="mt-2 text-3xl font-bold text-slate-900">
-            {weeklyDigest.prCount}
+            {weeklyDigestData.prCount}
           </p>
           <p className="text-sm text-slate-500">PR / コミット</p>
         </div>
@@ -71,7 +122,7 @@ export default function WeeklyPage() {
         <div className="glass-card rounded-2xl p-5 text-center">
           <Code2 size={24} className="mx-auto text-blue-500" />
           <p className="mt-2 text-3xl font-bold text-slate-900">
-            {weeklyDigest.totalLines.toLocaleString()}
+            {weeklyDigestData.totalLines.toLocaleString()}
           </p>
           <p className="text-sm text-slate-500">lines changed</p>
         </div>
@@ -79,7 +130,7 @@ export default function WeeklyPage() {
         <div className="glass-card rounded-2xl p-5 text-center">
           <TrendingUp size={24} className="mx-auto text-orange-500" />
           <p className="mt-2 text-3xl font-bold text-slate-900">
-            {weeklyDigest.momentum}
+            {weeklyDigestData.momentum}
           </p>
           <p className="text-sm text-slate-500">Momentum Score</p>
         </div>
@@ -87,7 +138,7 @@ export default function WeeklyPage() {
         <div className="glass-card rounded-2xl p-5 text-center">
           <Sparkles size={24} className="mx-auto text-purple-500" />
           <p className="mt-2 text-3xl font-bold text-slate-900">
-            {weeklyDigest.newTech.length}
+            {weeklyDigestData.newTech.length}
           </p>
           <p className="text-sm text-slate-500">新技術</p>
         </div>
@@ -99,7 +150,7 @@ export default function WeeklyPage() {
           🆕 今週初めて使った技術
         </h3>
         <div className="flex flex-wrap gap-3">
-          {weeklyDigest.newTech.map((tech) => (
+          {weeklyDigestData.newTech.map((tech) => (
             <div
               key={tech}
               className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3"
