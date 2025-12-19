@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { CreateReportInput } from "@/types/report";
 import Link from "next/link";
@@ -11,40 +11,170 @@ import {
   Sparkles,
   Clock,
   Loader2,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AICoach } from "@/components/AICoach";
 import { aiCoachMessages } from "@/lib/mock";
+import { getTodayISODate } from "@/lib/utils/date";
 
-// モック: GitHub APIから取得する想定のデータ
-const mockGitHubData = {
-  prCount: 2,
-  commitCount: 8,
-  linesChanged: 240,
-  changeSize: "M" as "S" | "M" | "L",
-  techTags: [
-    { name: "NextAuth", isNew: true },
-    { name: "Prisma", isNew: false },
-    { name: "TypeScript", isNew: false },
-  ],
-  autoSummary:
-    "認証機能の実装を中心に、比較的大きな変更を行いました。GitHub OAuthの設定とユーザー情報のDB保存を完成させました。",
+// GitHub統計データの型定義
+interface GitHubStats {
+  date: string;
+  commits: {
+    count: number;
+    linesChanged: number;
+    repositories: string[];
+    details: Array<{
+      repo: string;
+      message: string;
+      sha: string;
+      additions: number;
+      deletions: number;
+      url: string;
+      date: string;
+    }>;
+  };
+  pullRequests: {
+    count: number;
+    merged: number;
+    reviews: number;
+    reviewStatus: string | null;
+    details: Array<{
+      repo: string;
+      title: string;
+      number: number;
+      state: string;
+      merged: boolean;
+      body: string | null;
+      url: string;
+      additions: number;
+      deletions: number;
+      changedFiles: number;
+      createdAt: string;
+      mergedAt: string | null;
+    }>;
+  };
+  techTags: Array<{
+    name: string;
+    isNew: boolean;
+  }>;
+  changeSize: "S" | "M" | "L";
+  prSummary: string;
+}
+
+// LLM生成風のタイトル候補を生成する関数
+const generateTitleSuggestions = (stats: GitHubStats | null): string[] => {
+  if (!stats) {
+    return [
+      "📝 今日の学習記録",
+      "💻 プログラミングの記録",
+      "🚀 開発の一日",
+    ];
+  }
+
+  const suggestions: string[] = [];
+  const { commits, pullRequests, techTags } = stats;
+
+  // PRベースのタイトル
+  if (pullRequests.count > 0 && pullRequests.details.length > 0) {
+    const mainPR = pullRequests.details[0];
+    suggestions.push(`🚀 ${mainPR.title}`);
+    if (pullRequests.merged > 0) {
+      suggestions.push(`✅ PRマージ完了: ${mainPR.title}`);
+    }
+  }
+
+  // 技術スタックベースのタイトル
+  const newTechs = techTags.filter((t) => t.isNew);
+  if (newTechs.length > 0) {
+    suggestions.push(`🆕 ${newTechs[0].name}を学んだ日`);
+  }
+
+  // コミット数ベースのタイトル
+  if (commits.count >= 5) {
+    suggestions.push(`💪 ${commits.count}コミット達成の日`);
+  }
+
+  // デフォルトの候補
+  if (suggestions.length === 0) {
+    suggestions.push(
+      "📝 今日の開発記録",
+      "💻 コードと向き合った一日",
+      "🎯 着実に前進した日",
+    );
+  }
+
+  return suggestions.slice(0, 3);
 };
-
-// LLM生成風のタイトル候補
-const titleSuggestions = [
-  "🔐 認証フローを一段深く理解した日",
-  "🚀 OAuth実装を完走した日",
-  "💡 セッション管理の謎が解けた日",
-];
 
 export default function NewLogPage() {
   const router = useRouter();
-  const [title, setTitle] = useState(titleSuggestions[0]);
+  const [title, setTitle] = useState("");
   const [todayLearning, setTodayLearning] = useState("");
   const [struggles, setStruggles] = useState("");
   const [tomorrow, setTomorrow] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // GitHub統計データの状態管理
+  const [githubStats, setGithubStats] = useState<GitHubStats | null>(null);
+  const [isLoadingGitHub, setIsLoadingGitHub] = useState(true);
+  const [githubError, setGithubError] = useState<string | null>(null);
+  const [titleSuggestions, setTitleSuggestions] = useState<string[]>([]);
+
+  // GitHubデータを取得する関数（useCallbackでメモ化）
+  const fetchGitHubStats = useCallback(async (date?: string) => {
+    setIsLoadingGitHub(true);
+    setGithubError(null);
+
+    try {
+      const targetDate = date || getTodayISODate();
+      const response = await fetch(
+        `/api/github/daily-stats?date=${targetDate}`,
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("認証エラー: 再度ログインしてください");
+        }
+        throw new Error("GitHubデータの取得に失敗しました");
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "データの取得に失敗しました");
+      }
+
+      setGithubStats(result.data);
+      
+      // タイトル候補を生成
+      const suggestions = generateTitleSuggestions(result.data);
+      setTitleSuggestions(suggestions);
+      setTitle(suggestions[0]);
+
+      toast.success("GitHubデータを取得しました！");
+    } catch (error) {
+      console.error("Failed to fetch GitHub stats:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "データの取得に失敗しました";
+      setGithubError(errorMessage);
+      toast.error(errorMessage);
+
+      // エラー時はデフォルトのタイトル候補を設定
+      const defaultSuggestions = generateTitleSuggestions(null);
+      setTitleSuggestions(defaultSuggestions);
+      setTitle(defaultSuggestions[0]);
+    } finally {
+      setIsLoadingGitHub(false);
+    }
+  }, []);
+
+  // コンポーネントマウント時に自動取得
+  useEffect(() => {
+    fetchGitHubStats();
+  }, [fetchGitHubStats]);
 
   const handleSubmit = async () => {
     // バリデーション
@@ -64,19 +194,29 @@ export default function NewLogPage() {
     setIsSubmitting(true);
 
     try {
+      // GitHubデータがない場合は警告
+      if (!githubStats) {
+        toast.error("GitHubデータを取得してください");
+        setIsSubmitting(false);
+        return;
+      }
+
       // 日報データを作成してAPIに送信
       const reportData: CreateReportInput = {
         title: title,
         todayLearning: todayLearning,
         struggles: struggles || undefined,
         tomorrow: tomorrow || undefined,
-        githubUrl: "https://github.com/example/repo",
-        prCount: mockGitHubData.prCount,
-        commitCount: mockGitHubData.commitCount,
-        linesChanged: mockGitHubData.linesChanged,
-        changeSize: mockGitHubData.changeSize,
-        prSummary: mockGitHubData.autoSummary,
-        techTags: mockGitHubData.techTags,
+        githubUrl:
+          githubStats.commits.repositories[0] ||
+          githubStats.pullRequests.details[0]?.url ||
+          "https://github.com",
+        prCount: githubStats.pullRequests.count,
+        commitCount: githubStats.commits.count,
+        linesChanged: githubStats.commits.linesChanged,
+        changeSize: githubStats.changeSize,
+        prSummary: githubStats.prSummary,
+        techTags: githubStats.techTags,
       };
 
       const response = await fetch("/api/reports/create", {
@@ -124,106 +264,182 @@ export default function NewLogPage() {
 
       {/* Auto-generated Section (80%) */}
       <div className="glass-card rounded-2xl p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100">
-            <Sparkles size={16} className="text-emerald-600" />
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100">
+              <Sparkles size={16} className="text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-emerald-700">
+                自動生成（80%）
+              </p>
+              <p className="text-xs text-slate-500">
+                {isLoadingGitHub
+                  ? "GitHubから取得中..."
+                  : githubError
+                    ? "データ取得失敗"
+                    : "GitHubから自動取得しました"}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-emerald-700">
-              自動生成（80%）
-            </p>
-            <p className="text-xs text-slate-500">GitHubから自動取得しました</p>
-          </div>
-        </div>
-
-        {/* Title Selection */}
-        <div className="mb-4">
-          <label className="mb-2 block text-sm font-semibold text-slate-700">
-            📝 今日のタイトル（LLM生成）
-          </label>
-          <select
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100"
+          
+          {/* 再取得ボタン */}
+          <button
+            onClick={() => fetchGitHubStats()}
+            disabled={isLoadingGitHub}
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            title="GitHubデータを再取得"
+            aria-label="GitHubデータを再取得"
+            aria-busy={isLoadingGitHub}
           >
-            {titleSuggestions.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+            <RefreshCw
+              size={14}
+              className={isLoadingGitHub ? "animate-spin" : ""}
+              aria-hidden="true"
+            />
+            再取得
+          </button>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid gap-3 sm:grid-cols-4">
-          <div className="rounded-xl bg-slate-50 p-3 text-center">
-            <GitPullRequest size={18} className="mx-auto text-emerald-500" />
-            <p className="mt-1 text-lg font-bold text-slate-900">
-              {mockGitHubData.prCount}
-            </p>
-            <p className="text-xs text-slate-500">PR</p>
+        {/* ローディング状態 */}
+        {isLoadingGitHub && (
+          <div 
+            className="flex min-h-[200px] items-center justify-center"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="text-center">
+              <Loader2
+                size={32}
+                className="mx-auto animate-spin text-emerald-500"
+                aria-hidden="true"
+              />
+              <p className="mt-2 text-sm text-slate-500">
+                GitHubからデータを取得しています...
+              </p>
+            </div>
           </div>
-          <div className="rounded-xl bg-slate-50 p-3 text-center">
-            <Code2 size={18} className="mx-auto text-blue-500" />
-            <p className="mt-1 text-lg font-bold text-slate-900">
-              {mockGitHubData.linesChanged}
+        )}
+
+        {/* エラー状態 */}
+        {!isLoadingGitHub && githubError && (
+          <div 
+            className="flex min-h-[200px] flex-col items-center justify-center rounded-xl bg-red-50 p-6"
+            role="alert"
+            aria-live="assertive"
+          >
+            <AlertCircle size={32} className="text-red-500" aria-hidden="true" />
+            <p className="mt-2 text-sm font-semibold text-red-700">
+              {githubError}
             </p>
-            <p className="text-xs text-slate-500">lines</p>
-          </div>
-          <div className="rounded-xl bg-slate-50 p-3 text-center">
-            <Clock size={18} className="mx-auto text-orange-500" />
-            <p className="mt-1 text-lg font-bold text-slate-900">
-              {mockGitHubData.commitCount}
-            </p>
-            <p className="text-xs text-slate-500">commits</p>
-          </div>
-          <div className="rounded-xl bg-slate-50 p-3 text-center">
-            <span
-              className={`inline-block rounded-full px-2 py-1 text-xs font-bold ${
-                mockGitHubData.changeSize === "L"
-                  ? "bg-orange-100 text-orange-700"
-                  : mockGitHubData.changeSize === "M"
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-slate-200 text-slate-600"
-              }`}
+            <button
+              onClick={() => fetchGitHubStats()}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
+              aria-label="GitHubデータ取得を再試行"
             >
-              {mockGitHubData.changeSize}
-            </span>
-            <p className="mt-1 text-xs text-slate-500">変更規模</p>
+              <RefreshCw size={14} aria-hidden="true" />
+              再試行
+            </button>
           </div>
-        </div>
+        )}
 
-        {/* Tech Tags */}
-        <div className="mt-4">
-          <p className="mb-2 text-sm font-semibold text-slate-700">
-            🏷️ 使用技術
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {mockGitHubData.techTags.map((tag) => (
-              <span
-                key={tag.name}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                  tag.isNew
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-100 text-slate-600"
-                }`}
+        {/* データ表示 */}
+        {!isLoadingGitHub && !githubError && githubStats && (
+          <>
+            {/* Title Selection */}
+            <div className="mb-4">
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
+                📝 今日のタイトル（AI生成）
+              </label>
+              <select
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100"
               >
-                {tag.isNew && "🆕 "}
-                {tag.name}
-              </span>
-            ))}
-          </div>
-        </div>
+                {titleSuggestions.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {/* Auto Summary */}
-        <div className="mt-4 rounded-xl bg-slate-50 p-4">
-          <p className="mb-1 text-xs font-semibold text-slate-500">
-            作業内容（LLM整形）
-          </p>
-          <p className="text-sm leading-relaxed text-slate-700">
-            {mockGitHubData.autoSummary}
-          </p>
-        </div>
+            {/* Stats Grid */}
+            <div className="grid gap-3 sm:grid-cols-4">
+              <div className="rounded-xl bg-slate-50 p-3 text-center">
+                <GitPullRequest size={18} className="mx-auto text-emerald-500" />
+                <p className="mt-1 text-lg font-bold text-slate-900">
+                  {githubStats.pullRequests.count}
+                </p>
+                <p className="text-xs text-slate-500">PR</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-3 text-center">
+                <Code2 size={18} className="mx-auto text-blue-500" />
+                <p className="mt-1 text-lg font-bold text-slate-900">
+                  {githubStats.commits.linesChanged}
+                </p>
+                <p className="text-xs text-slate-500">lines</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-3 text-center">
+                <Clock size={18} className="mx-auto text-orange-500" />
+                <p className="mt-1 text-lg font-bold text-slate-900">
+                  {githubStats.commits.count}
+                </p>
+                <p className="text-xs text-slate-500">commits</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-3 text-center">
+                <span
+                  className={`inline-block rounded-full px-2 py-1 text-xs font-bold ${
+                    githubStats.changeSize === "L"
+                      ? "bg-orange-100 text-orange-700"
+                      : githubStats.changeSize === "M"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-slate-200 text-slate-600"
+                  }`}
+                >
+                  {githubStats.changeSize}
+                </span>
+                <p className="mt-1 text-xs text-slate-500">変更規模</p>
+              </div>
+            </div>
+
+            {/* Tech Tags */}
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-semibold text-slate-700">
+                🏷️ 使用技術
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {githubStats.techTags.length > 0 ? (
+                  githubStats.techTags.map((tag) => (
+                    <span
+                      key={tag.name}
+                      className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                        tag.isNew
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {tag.isNew && "🆕 "}
+                      {tag.name}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-400">技術タグなし</p>
+                )}
+              </div>
+            </div>
+
+            {/* Auto Summary */}
+            <div className="mt-4 rounded-xl bg-slate-50 p-4">
+              <p className="mb-1 text-xs font-semibold text-slate-500">
+                作業内容（AI整形）
+              </p>
+              <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">
+                {githubStats.prSummary || "本日の活動なし"}
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Manual Input Section (20%) */}
@@ -292,7 +508,7 @@ export default function NewLogPage() {
         </p>
         <button
           onClick={handleSubmit}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isLoadingGitHub || !githubStats}
           className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-emerald-200 transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? (
