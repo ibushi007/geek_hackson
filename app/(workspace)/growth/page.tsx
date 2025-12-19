@@ -88,7 +88,7 @@ export default function GrowthPage() {
             <div className="flex items-end gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
               {growthData.weeklyCommits.map((day) => (
                 <div
-                  key={day.label}
+                  key={day.dayOfWeek}
                   className="flex flex-1 flex-col items-center gap-2"
                 >
                   <div
@@ -98,7 +98,7 @@ export default function GrowthPage() {
                     }}
                   />
                   <span className="text-xs font-semibold text-slate-500">
-                    {day.label}
+                    {day.dayOfWeek}
                   </span>
                   <span className="text-xs font-bold text-slate-700">
                     {day.value}
@@ -118,7 +118,7 @@ export default function GrowthPage() {
             <div className="flex items-end gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-inner shadow-slate-200/60">
               {growthData.monthlyCommits.map((week) => (
                 <div
-                  key={week.label}
+                  key={week.weekLabel}
                   className="flex flex-1 flex-col items-center gap-2"
                 >
                   <div
@@ -128,7 +128,7 @@ export default function GrowthPage() {
                     }}
                   />
                   <span className="text-xs font-semibold text-slate-500">
-                    {week.label}
+                    {week.weekLabel}
                   </span>
                   <span className="text-xs font-bold text-slate-700">
                     {week.value}
