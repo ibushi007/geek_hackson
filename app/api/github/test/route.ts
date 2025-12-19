@@ -9,7 +9,7 @@ export async function GET() {
   try {
     // 認証ユーザー情報を取得
     const user = await githubClient.getAuthenticatedUser();
-    
+
     // Rate limit情報を取得
     const rateLimit = await githubClient.getRateLimit();
 
@@ -25,13 +25,13 @@ export async function GET() {
     });
   } catch (error) {
     console.error("GitHub API test failed:", error);
-    
+
     return NextResponse.json(
       {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
