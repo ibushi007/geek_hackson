@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // 1. インポート
 import { MessageCircle, X, Sparkles } from "lucide-react";
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
 export function AICoach({ message }: Props) {
   const [isOpen, setIsOpen] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
+  const router = useRouter(); // 2. 初期化
 
   if (!isOpen) {
     return (
@@ -72,7 +74,9 @@ export function AICoach({ message }: Props) {
               <button className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100">
                 💪 ありがとう！
               </button>
-              <button className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-200">
+              <button
+               onClick={() => router.push("/log/new")}
+               className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-200">
                 📝 日報を書く
               </button>
             </div>
