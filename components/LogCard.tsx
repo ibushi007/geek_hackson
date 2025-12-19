@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowRight, GitPullRequest, Code2 } from "lucide-react";
-import type { LearningLog } from "@/lib/mock";
+import type { ReportResponse } from "@/types/report";
 
 type Props = {
-  log: LearningLog;
+  log: ReportResponse;
 };
 
 export function LogCard({ log }: Props) {
@@ -48,7 +48,7 @@ export function LogCard({ log }: Props) {
 
       {/* Tech Tags */}
       <div className="mt-3 flex flex-wrap gap-2">
-        {log.techTags.map((tag) => (
+        {(log.techTags || []).map((tag) => (
           <span
             key={tag.name}
             className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -82,13 +82,15 @@ export function LogCard({ log }: Props) {
   );
 }
 
-function formatDate(date: Date) {
+function formatDate(dateString: string | Date) {
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
   return date.toLocaleDateString("ja-JP", {
     month: "short",
     day: "numeric",
     weekday: "short",
   });
 }
+
 
 
 

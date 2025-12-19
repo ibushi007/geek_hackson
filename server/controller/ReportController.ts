@@ -63,4 +63,58 @@ export class ReportController {
       return handleError(error, "Fetch report by id");
     }
   }
+
+  async updateReport(id: string, body: Partial<CreateReportInput>) {
+    try {
+      const auth = await this.authenticate();
+      if ("error" in auth) return auth.error;
+
+      const existingReport = await this.reportUsecase.getReportById(id);
+
+      //権限チェック
+      if (existingReport.userId !== auth.userId) {
+        return NextResponse.json(
+          { error: "Forbidden" },
+          { status: 403 }
+        );
+    }
+    
+    //更新実行
+    const updatedReport = await this.reportUsecase.updateReport(
+      id,
+      body
+    );
+
+    return NextResponse.json(updatedReport, { status: 200 });
+  } catch (error) {
+    return this.handleError(error, "Update report");
+  }
 }
+
+  async deleteReport(id: string) {
+    try {
+      const auth = await this.authenticate();
+      if ("error" in auth) return auth.error;
+
+      const existingReport = await this.reportUsecase.getReportById(id);
+
+      //権限チェック
+      if (existingReport.userId !== auth.userId) {
+        return NextResponse.json(
+          { error: "Forbidden" },
+          { status: 403 }
+        );
+      }
+      
+      //削除実行
+      await this.reportUsecase.deleteReport(id);
+      return NextResponse.json({ 
+        message: "Report deleted successfully" },
+        { status: 200 }
+      );
+    } catch (error) {
+      return this.handleError(error, "Delete report");
+    }
+  }
+}
+
