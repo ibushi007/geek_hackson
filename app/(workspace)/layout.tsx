@@ -19,4 +19,3 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
-

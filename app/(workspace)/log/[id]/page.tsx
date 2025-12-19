@@ -66,7 +66,9 @@ export default function LogDetailPage() {
   if (error || !log) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center">
-        <p className="text-lg text-red-600">{error || "日報が見つかりませんでした"}</p>
+        <p className="text-lg text-red-600">
+          {error || "日報が見つかりませんでした"}
+        </p>
         <Link
           href="/dashboard"
           className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
@@ -95,9 +97,11 @@ export default function LogDetailPage() {
           <p className="text-sm font-semibold text-slate-500">
             {formatDate(log.createdAt)}
           </p>
-          <h1 className="mt-1 text-3xl font-bold text-slate-900">{log.title}</h1>
+          <h1 className="mt-1 text-3xl font-bold text-slate-900">
+            {log.title}
+          </h1>
         </div>
-        
+
         {/* Edit Button */}
         <Link
           href={`/log/${logId}/edit`}
@@ -210,7 +214,9 @@ export default function LogDetailPage() {
 
         <div className="space-y-4">
           <div className="rounded-xl bg-slate-50 p-4">
-            <p className="text-xs font-semibold text-slate-500">💡 今日の学び</p>
+            <p className="text-xs font-semibold text-slate-500">
+              💡 今日の学び
+            </p>
             <p className="mt-1 text-slate-700">{log.todayLearning}</p>
           </div>
 
@@ -260,7 +266,8 @@ export default function LogDetailPage() {
 }
 
 function formatDate(dateString: string | Date) {
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  const date =
+    typeof dateString === "string" ? new Date(dateString) : dateString;
   return date.toLocaleDateString("ja-JP", {
     year: "numeric",
     month: "long",
@@ -268,6 +275,3 @@ function formatDate(dateString: string | Date) {
     weekday: "long",
   });
 }
-
-
-

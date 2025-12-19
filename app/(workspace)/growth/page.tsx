@@ -1,15 +1,82 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BarChart3, LineChart, Sparkles, TrendingUp } from "lucide-react";
 import { SkillMap } from "@/components/SkillMap";
 import { AICoach } from "@/components/AICoach";
-import { growthData, aiCoachMessages } from "@/lib/mock";
+import { growthData as mockGrowthData, aiCoachMessages } from "@/lib/mock";
+import type { GrowthData } from "@/types/growth";
+
+type WeeklyCommitWithIsToday = {
+  dayOfWeek: string;
+  value: number;
+  dateKey: string;
+  isToday: boolean;
+};
 
 export default function GrowthPage() {
   const [activeTab, setActiveTab] = useState<"weekly" | "monthly">("weekly");
-  const weeklyMax = Math.max(...growthData.weeklyCommits.map((d) => d.value));
-  const monthlyMax = Math.max(...growthData.monthlyCommits.map((d) => d.value));
+  const [growthData, setGrowthData] = useState<GrowthData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // 今日の日付をYYYY-MM-DD形式で取得
+  const getTodayDateKey = (): string => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  useEffect(() => {
+    const fetchGrowthData = async () => {
+      try {
+        const response = await fetch("/api/growth");
+        if (!response.ok) {
+          throw new Error("Failed to fetch growth data");
+        }
+        const data: GrowthData = await response.json();
+        setGrowthData(data);
+      } catch (error) {
+        console.error("Error fetching growth data:", error);
+        // エラー時はモックデータを使用
+        setGrowthData({
+          weeklyCommits: mockGrowthData.weeklyCommits,
+          streak: mockGrowthData.streak,
+          momentum: mockGrowthData.momentum,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGrowthData();
+  }, []);
+
+  // dateKeyを使ってisTodayを判定した週間コミットデータ
+  const todayDateKey = getTodayDateKey();
+  const weeklyCommitsWithIsToday: WeeklyCommitWithIsToday[] =
+    growthData?.weeklyCommits.map((commit) => ({
+      ...commit,
+      isToday: commit.dateKey === todayDateKey,
+    })) || [];
+
+  const weeklyMax = Math.max(
+    ...weeklyCommitsWithIsToday.map((d) => d.value),
+    1,
+  );
+  const monthlyMax = Math.max(
+    ...mockGrowthData.monthlyCommits.map((d) => d.value),
+    1,
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-slate-500">読み込み中...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -29,7 +96,7 @@ export default function GrowthPage() {
               Learning Momentum
             </p>
             <p className="mt-1 text-4xl font-bold text-slate-900">
-              {growthData.momentum}
+              {growthData?.momentum ?? 0}
               <span className="text-lg font-normal text-slate-400">/100</span>
             </p>
           </div>
@@ -40,7 +107,7 @@ export default function GrowthPage() {
         <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
           <div
             className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-1000"
-            style={{ width: `${growthData.momentum}%` }}
+            style={{ width: `${growthData?.momentum ?? 0}%` }}
           />
         </div>
         <div className="mt-3 flex items-center gap-2 rounded-xl bg-emerald-50 p-3">
@@ -86,22 +153,36 @@ export default function GrowthPage() {
               週間コミット数
             </p>
             <div className="flex items-end gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              {growthData.weeklyCommits.map((day) => (
+              {weeklyCommitsWithIsToday.map((day) => (
                 <div
-                  key={day.label}
+                  key={day.dayOfWeek}
                   className="flex flex-1 flex-col items-center gap-2"
                 >
-                  <div
-                    className="w-full rounded-full bg-gradient-to-t from-emerald-300 to-emerald-500 shadow-md shadow-emerald-200/60"
-                    style={{
-                      height: `${Math.max((day.value / weeklyMax) * 140, 8)}px`,
-                    }}
-                  />
-                  <span className="text-xs font-semibold text-slate-500">
-                    {day.label}
+                  {day.value > 0 && (
+                    <div
+                      className="w-full rounded-full bg-gradient-to-t from-emerald-300 to-emerald-500 shadow-md shadow-emerald-200/60 transition-all"
+                      style={{
+                        height: `${Math.max((day.value / weeklyMax) * 140, 8)}px`,
+                      }}
+                    />
+                  )}
+                  <span
+                    className={`text-xs font-semibold ${
+                      day.isToday
+                        ? "text-slate-700 border-b-2 border-emerald-600 pb-0.5"
+                        : "text-slate-500"
+                    }`}
+                  >
+                    {day.dayOfWeek}
                   </span>
                   <span className="text-xs font-bold text-slate-700">
-                    {day.value}
+                    {day.dateKey && day.dateKey > todayDateKey
+                      ? "-"
+                      : day.dateKey === todayDateKey
+                        ? day.value > 0
+                          ? day.value
+                          : "-"
+                        : day.value}
                   </span>
                 </div>
               ))}
@@ -116,9 +197,9 @@ export default function GrowthPage() {
               月間コミット数（週ごと）
             </p>
             <div className="flex items-end gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-inner shadow-slate-200/60">
-              {growthData.monthlyCommits.map((week) => (
+              {mockGrowthData.monthlyCommits.map((week) => (
                 <div
-                  key={week.label}
+                  key={week.weekLabel}
                   className="flex flex-1 flex-col items-center gap-2"
                 >
                   <div
@@ -128,7 +209,7 @@ export default function GrowthPage() {
                     }}
                   />
                   <span className="text-xs font-semibold text-slate-500">
-                    {week.label}
+                    {week.weekLabel}
                   </span>
                   <span className="text-xs font-bold text-slate-700">
                     {week.value}
@@ -144,7 +225,7 @@ export default function GrowthPage() {
           <div className="rounded-2xl bg-slate-50 p-4">
             <p className="text-sm text-slate-500">週間合計</p>
             <p className="mt-1 text-2xl font-bold text-slate-900">
-              {growthData.weeklyCommits.reduce((a, b) => a + b.value, 0)}
+              {weeklyCommitsWithIsToday.reduce((a, b) => a + b.value, 0)}
               <span className="text-sm font-normal text-slate-500">
                 {" "}
                 commits
@@ -157,7 +238,7 @@ export default function GrowthPage() {
           <div className="rounded-2xl bg-slate-50 p-4">
             <p className="text-sm text-slate-500">学習ストリーク</p>
             <p className="mt-1 text-2xl font-bold text-slate-900">
-              {growthData.streak}
+              {growthData?.streak ?? 0}
               <span className="text-sm font-normal text-slate-500">日連続</span>
             </p>
             <p className="text-xs font-semibold text-orange-600">
@@ -168,14 +249,10 @@ export default function GrowthPage() {
       </div>
 
       {/* Skill Map */}
-      <SkillMap skills={growthData.techSkillMap} />
+      <SkillMap skills={mockGrowthData.techSkillMap} />
 
       {/* AI Coach */}
       <AICoach message={aiCoachMessages.growth} />
     </div>
   );
 }
-
-
-
-

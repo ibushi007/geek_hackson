@@ -6,24 +6,24 @@ export type TechTag = {
 export type ChangeSize = "S" | "M" | "L";
 
 export type CreateReportInput = {
-  title: string;            
-  todayLearning: string;           
-  struggles?: string;              
-  tomorrow?: string;               
-  githubUrl: string;          
-  prCount: number;                
-  commitCount: number;             
-  linesChanged: number;            
-  changeSize: ChangeSize;            
-  prSummary: string;          
-  aiCoachComment?: string;   
-  techTags?: TechTag[];  
+  title: string;
+  todayLearning: string;
+  struggles?: string;
+  tomorrow?: string;
+  githubUrl: string;
+  prCount: number;
+  commitCount: number;
+  linesChanged: number;
+  changeSize: ChangeSize;
+  prSummary: string;
+  aiCoachComment?: string;
+  techTags?: TechTag[];
 };
 
 export type ReportResponse = {
-  id: string;                    
-  userId: string;            
-  createdAt: Date;                
+  id: string;
+  userId: string;
+  createdAt: Date;
   title: string;
   todayLearning: string;
   struggles?: string | null;

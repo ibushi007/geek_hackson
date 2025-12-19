@@ -1,14 +1,22 @@
 import { prisma } from "@/lib/prisma";
-import { CreateReportInput, ReportResponse, TechTag, ChangeSize } from "@/types/report";
+import {
+  CreateReportInput,
+  ReportResponse,
+  TechTag,
+  ChangeSize,
+} from "@/types/report";
 
 export class ReportRepository {
   /**
- * 日報を作成
- * @param userId ユーザーID
- * @param input 日報データ
- * @returns 作成された日報
- */
-  async create(userId: string, input: CreateReportInput): Promise<ReportResponse> {
+   * 日報を作成
+   * @param userId ユーザーID
+   * @param input 日報データ
+   * @returns 作成された日報
+   */
+  async create(
+    userId: string,
+    input: CreateReportInput,
+  ): Promise<ReportResponse> {
     const report = await prisma.dailyReport.create({
       data: {
         userId,
@@ -55,10 +63,10 @@ export class ReportRepository {
   }
 
   /**
- * ユーザーIDで日報一覧を取得（作成日時の降順）
- * @param userId ユーザーID
- * @returns 日報一覧
- */
+   * ユーザーIDで日報一覧を取得（作成日時の降順）
+   * @param userId ユーザーID
+   * @returns 日報一覧
+   */
   async findByUserId(userId: string): Promise<ReportResponse[]> {
     const reports = await prisma.dailyReport.findMany({
       where: { userId },
@@ -95,10 +103,13 @@ export class ReportRepository {
    * @param input 更新データ
    * @returns 更新された日報
    */
-  async update(id: string, input: Partial<CreateReportInput>): Promise<ReportResponse> {
+  async update(
+    id: string,
+    input: Partial<CreateReportInput>,
+  ): Promise<ReportResponse> {
     const report = await prisma.dailyReport.update({
       where: { id },
-      data: input
+      data: input,
     });
 
     return {

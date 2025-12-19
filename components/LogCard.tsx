@@ -83,14 +83,11 @@ export function LogCard({ log }: Props) {
 }
 
 function formatDate(dateString: string | Date) {
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  const date =
+    typeof dateString === "string" ? new Date(dateString) : dateString;
   return date.toLocaleDateString("ja-JP", {
     month: "short",
     day: "numeric",
     weekday: "short",
   });
 }
-
-
-
-

@@ -152,7 +152,3 @@ export default function WeeklyPage() {
     </div>
   );
 }
-
-
-
-

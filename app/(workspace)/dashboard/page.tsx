@@ -1,18 +1,54 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { PenLine, TrendingUp, Zap } from "lucide-react";
 import Link from "next/link";
 import { LogCard } from "@/components/LogCard";
 import { AICoach } from "@/components/AICoach";
-import { user, growthData, aiCoachMessages } from "@/lib/mock";
+
+import {
+  user,
+  growthData as mockGrowthData,
+  aiCoachMessages,
+} from "@/lib/mock";
+import type { GrowthData } from "@/types/growth";
 import type { ReportResponse, ShowReportsResponse } from "@/types/report";
 
 export default function DashboardPage() {
+  // ===== growth (/api/growth) =====
+  const [growthData, setGrowthData] = useState<GrowthData | null>(null);
+  const [growthLoading, setGrowthLoading] = useState(true);
+
+  // ===== reports (/api/reports) =====
   const [reports, setReports] = useState<ReportResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ---- fetch growth ----
+  useEffect(() => {
+    const fetchGrowthData = async () => {
+      try {
+        const response = await fetch("/api/growth");
+        if (!response.ok) throw new Error("Failed to fetch growth data");
+        const data: GrowthData = await response.json();
+        setGrowthData(data);
+      } catch (err) {
+        console.error("Error fetching growth data:", err);
+        // エラー時はモックデータへフォールバック
+        setGrowthData({
+          weeklyCommits: mockGrowthData.weeklyCommits,
+          streak: mockGrowthData.streak,
+          momentum: mockGrowthData.momentum,
+        });
+      } finally {
+        setGrowthLoading(false);
+      }
+    };
+
+    fetchGrowthData();
+  }, []);
+
+  // ---- fetch reports ----
   useEffect(() => {
     const fetchReports = async () => {
       try {
@@ -20,10 +56,7 @@ export default function DashboardPage() {
         setError(null);
 
         const response = await fetch("/api/reports");
-
-        if (!response.ok) {
-          throw new Error("日報の取得に失敗しました");
-        }
+        if (!response.ok) throw new Error("日報の取得に失敗しました");
 
         const data: ShowReportsResponse = await response.json();
         setReports(data.reports);
@@ -36,6 +69,15 @@ export default function DashboardPage() {
 
     fetchReports();
   }, []);
+
+  // growth は上部の数字に直結するので、最低限ロード中表示を入れる（reports はセクション内で表示済み）
+  if (growthLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-slate-500">読み込み中...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -68,7 +110,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">学習ストリーク</p>
               <p className="text-2xl font-bold text-slate-900">
-                {growthData.streak}日連続
+                {growthData?.streak ?? 0}日連続
               </p>
             </div>
           </div>
@@ -82,7 +124,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">Learning Momentum</p>
               <p className="text-2xl font-bold text-slate-900">
-                {growthData.momentum}
+                {growthData?.momentum ?? 0}
                 <span className="text-sm font-normal text-slate-500">/100</span>
               </p>
             </div>
@@ -97,7 +139,8 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">今週のコミット</p>
               <p className="text-2xl font-bold text-slate-900">
-                {growthData.weeklyCommits.reduce((a, b) => a + b.value, 0)}
+                {growthData?.weeklyCommits.reduce((a, b) => a + b.value, 0) ??
+                  0}
                 <span className="text-sm font-normal text-slate-500">
                   {" "}
                   commits
@@ -119,6 +162,7 @@ export default function DashboardPage() {
             すべて見る →
           </Link>
         </div>
+
         <div className="space-y-4">
           {isLoading ? (
             <div className="flex min-h-[200px] items-center justify-center">
@@ -152,4 +196,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

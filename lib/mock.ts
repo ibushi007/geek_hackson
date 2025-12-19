@@ -38,8 +38,8 @@ export type WeeklyDigest = {
 };
 
 export type GrowthData = {
-  weeklyCommits: { label: string; value: number }[];
-  monthlyCommits: { label: string; value: number }[];
+  weeklyCommits: { dayOfWeek: string; value: number; dateKey: string }[];
+  monthlyCommits: { weekLabel: string; value: number }[];
   techSkillMap: { name: string; level: number; isNew: boolean }[];
   streak: number;
   momentum: number; // Learning Momentum score
@@ -149,19 +149,19 @@ export const weeklyDigest: WeeklyDigest = {
 // ========================================
 export const growthData: GrowthData = {
   weeklyCommits: [
-    { label: "Mon", value: 8 },
-    { label: "Tue", value: 5 },
-    { label: "Wed", value: 12 },
-    { label: "Thu", value: 7 },
-    { label: "Fri", value: 3 },
-    { label: "Sat", value: 2 },
-    { label: "Sun", value: 1 },
+    { dayOfWeek: "Mon", value: 8, dateKey: "2025-12-16" },
+    { dayOfWeek: "Tue", value: 5, dateKey: "2025-12-17" },
+    { dayOfWeek: "Wed", value: 12, dateKey: "2025-12-18" },
+    { dayOfWeek: "Thu", value: 7, dateKey: "2025-12-19" },
+    { dayOfWeek: "Fri", value: 3, dateKey: "2025-12-20" },
+    { dayOfWeek: "Sat", value: 2, dateKey: "2025-12-21" },
+    { dayOfWeek: "Sun", value: 1, dateKey: "2025-12-22" },
   ],
   monthlyCommits: [
-    { label: "W1", value: 21 },
-    { label: "W2", value: 34 },
-    { label: "W3", value: 28 },
-    { label: "W4", value: 38 },
+    { weekLabel: "W1", value: 21 },
+    { weekLabel: "W2", value: 34 },
+    { weekLabel: "W3", value: 28 },
+    { weekLabel: "W4", value: 38 },
   ],
   techSkillMap: [
     { name: "TypeScript", level: 70, isNew: false },
@@ -184,4 +184,3 @@ export const aiCoachMessages = {
   newLog: "今日の学びを記録しましょう。1行でも大丈夫ですよ！",
   weekly: "一週間の振り返りは成長を実感できる大切な時間です ✨",
 };
-

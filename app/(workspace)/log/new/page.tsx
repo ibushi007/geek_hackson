@@ -60,9 +60,9 @@ export default function NewLogPage() {
       toast.error("「今日の学び」は5文字以上入力してください");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       // 日報データを作成してAPIに送信
       const reportData: CreateReportInput = {
@@ -93,10 +93,10 @@ export default function NewLogPage() {
       }
 
       const savedReport = await response.json();
-      
+
       // 成功通知
       toast.success("日報を保存しました！");
-      
+
       // 保存成功後、詳細画面に遷移
       setTimeout(() => {
         router.push(`/log/${savedReport.id}`);
@@ -104,9 +104,9 @@ export default function NewLogPage() {
     } catch (error) {
       console.error("Error saving report:", error);
       toast.error(
-        error instanceof Error 
-          ? error.message 
-          : "日報の保存に失敗しました。もう一度お試しください"
+        error instanceof Error
+          ? error.message
+          : "日報の保存に失敗しました。もう一度お試しください",
       );
       setIsSubmitting(false);
     }
@@ -236,7 +236,9 @@ export default function NewLogPage() {
             <p className="text-sm font-semibold text-blue-700">
               あなたの振り返り（20%）
             </p>
-            <p className="text-xs text-slate-500">1行でOK！学びを定着させよう</p>
+            <p className="text-xs text-slate-500">
+              1行でOK！学びを定着させよう
+            </p>
           </div>
         </div>
 
@@ -312,4 +314,3 @@ export default function NewLogPage() {
     </div>
   );
 }
-

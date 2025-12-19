@@ -54,14 +54,16 @@ export const authOptions: NextAuthOptions = {
           });
           if (user) {
             (session.user as { id?: string; githubId?: string }).id = user.id;
-            (session.user as { id?: string; githubId?: string }).githubId = user.githubId;
+            (session.user as { id?: string; githubId?: string }).githubId =
+              user.githubId;
           }
         } catch (error) {
           console.error("セッション取得エラー:", error);
         }
       }
       if (token.accessToken) {
-        (session as { accessToken?: string }).accessToken = token.accessToken as string;
+        (session as { accessToken?: string }).accessToken =
+          token.accessToken as string;
       }
       return session;
     },
