@@ -15,10 +15,12 @@ generator client {
 
 //このテーブルは後からでも良いのでいったん考えなくていい。
 model User {
-  id        String        @id @default(uuid())
-  githubId  String        @unique
-  name      String?
-  avatarUrl String?
+  id          String        @id @default(uuid())
+  githubId    String        @unique
+  name        String?
+  avatarUrl   String?
+  accessToken String?       //追加
+  tokenExpiry DateTime?     //トークン有効期限
 
   dailyReports DailyReport[]
 }

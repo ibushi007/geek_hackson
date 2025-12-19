@@ -65,7 +65,7 @@ export default function LogsPage() {
     const learning = (log.todayLearning ?? "").toLowerCase();
     const q = searchQuery.toLowerCase();
     return title.includes(q) || learning.includes(q);
-  });  
+  });
 
   const sortedReports = [...filteredReports].sort((a, b) => {
     if (sortBy === "date") {
@@ -82,7 +82,11 @@ export default function LogsPage() {
   const handleDeleteSelected = async () => {
     if (selectedIds.size === 0) return;
 
-    if (!window.confirm(`${selectedIds.size}件の日報を削除しますか？この操作は取り消せません。`)) {
+    if (
+      !window.confirm(
+        `${selectedIds.size}件の日報を削除しますか？この操作は取り消せません。`,
+      )
+    ) {
       return;
     }
 
@@ -91,14 +95,14 @@ export default function LogsPage() {
       setError(null);
 
       // 各日報を個別に削除
-      const deletePromises = Array.from(selectedIds).map(id =>
-        fetch(`/api/reports/${id}`, { method: "DELETE" })
+      const deletePromises = Array.from(selectedIds).map((id) =>
+        fetch(`/api/reports/${id}`, { method: "DELETE" }),
       );
 
       const results = await Promise.all(deletePromises);
-      
-      const failedCount = results.filter(r => !r.ok).length;
-      
+
+      const failedCount = results.filter((r) => !r.ok).length;
+
       if (failedCount > 0) {
         throw new Error(`${failedCount}件の削除に失敗しました`);
       }
@@ -138,7 +142,9 @@ export default function LogsPage() {
                 学習ログ一覧
               </h1>
               <p className="text-sm text-slate-500">
-                {isLoading ? "読み込み中..." : `全${sortedReports.length}件の日報`}{" "}
+                {isLoading
+                  ? "読み込み中..."
+                  : `全${sortedReports.length}件の日報`}{" "}
               </p>
             </div>
           </div>
@@ -235,7 +241,7 @@ export default function LogsPage() {
               <>
                 <button
                   onClick={handleDeleteSelected}
-                  disabled={selectedIds.size === 0 ||  isDeleting}
+                  disabled={selectedIds.size === 0 || isDeleting}
                   className="inline-flex items-center gap-2 rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 >
                   <Trash2 size={16} />
@@ -379,7 +385,7 @@ export default function LogsPage() {
                     }).map((_, i) => {
                       const pageNum = i + 1;
                       const totalPages = Math.ceil(
-                        sortedReports.length / itemsPerPage
+                        sortedReports.length / itemsPerPage,
                       );
 
                       // 最初のページ、最後のページ、現在のページ付近のみ表示
@@ -420,8 +426,8 @@ export default function LogsPage() {
                       setCurrentPage((p) =>
                         Math.min(
                           Math.ceil(sortedReports.length / itemsPerPage),
-                          p + 1
-                        )
+                          p + 1,
+                        ),
                       )
                     }
                     disabled={
