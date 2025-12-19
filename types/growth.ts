@@ -1,7 +1,7 @@
 export type WeeklyCommits = {
     dayOfWeek: string;
     value: number;
-    isToday: boolean;
+    dateKey: string; // YYYY-MM-DD
 }[]
 
 export type GrowthData = {

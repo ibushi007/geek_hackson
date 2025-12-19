@@ -40,7 +40,6 @@ export class GrowthUseCase {
         monday.setDate(today.getDate() - diffToMonday);
 
         const result: WeeklyCommits = [];
-        const todayKey = this.toDateKey(today);
 
         // 月曜日(0)から日曜日(6)までループ
         for (let i = 0; i < 7; i++) {
@@ -55,7 +54,7 @@ export class GrowthUseCase {
             result.push({
                 dayOfWeek: this.getDayOfWeek(targetDate),
                 value: foundReport?.commitCount || 0, // 日報がない（未来含む）場合は0
-                isToday: targetDateKey === todayKey,  // 日付文字列で判定
+                dateKey: targetDateKey,
             });
         }
         return result;
