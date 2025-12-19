@@ -72,9 +72,11 @@ export class GrowthUseCase {
         // 1. 最新の日報を取得
         const latestReport = reports[0];
         const latestReportDate = new Date(latestReport.createdAt);
+        latestReportDate.setHours(0, 0, 0, 0);
 
         // 2. 継続判定（今日または昨日投稿していなければストリークは0）
         const today = new Date();
+        today.setHours(0, 0, 0, 0);
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
 
