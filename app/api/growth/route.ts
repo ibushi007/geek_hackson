@@ -1,8 +1,8 @@
 import { growthController } from "@/server/controller";
 /**
  * GET /api/growth
- * 週間・月間のレポートを取得
- * @returns 週間・月間のレポート
+ * ストローク、学習モメンタム、週間コミット数を取得
+ * @returns ストローク、学習モメンタム、週間コミット数
  */
 export async function GET() {
   return growthController.getGrowthData();
