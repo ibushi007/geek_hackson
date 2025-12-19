@@ -21,3 +21,11 @@ export async function PUT(
   const body = await request.json();
   return reportController.updateReport(id, body);
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  return reportController.deleteReport(id);
+}

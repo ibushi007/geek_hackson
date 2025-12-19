@@ -63,7 +63,7 @@ export class ReportController {
 
   async updateReport(id: string, body: Partial<CreateReportInput>) {
     try {
-      const auth = await this.authenticate();
+      const auth = await authenticate();
       if ("error" in auth) return auth.error;
 
       const existingReport = await this.reportUsecase.getReportById(id);
@@ -78,13 +78,13 @@ export class ReportController {
 
       return NextResponse.json(updatedReport, { status: 200 });
     } catch (error) {
-      return this.handleError(error, "Update report");
+      return handleError(error, "Update report");
     }
   }
 
   async deleteReport(id: string) {
     try {
-      const auth = await this.authenticate();
+      const auth = await authenticate();
       if ("error" in auth) return auth.error;
 
       const existingReport = await this.reportUsecase.getReportById(id);
@@ -103,7 +103,7 @@ export class ReportController {
         { status: 200 },
       );
     } catch (error) {
-      return this.handleError(error, "Delete report");
+      return handleError(error, "Delete report");
     }
   }
 }
