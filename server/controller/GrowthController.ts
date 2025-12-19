@@ -5,8 +5,8 @@ import { authenticate, handleError } from "@/server/utils/auth";
 import { GrowthUseCase } from "@/server/usecases/GrowthUseCase";
 
 export class GrowthController {
-    private growthUsecase: GrowthUseCase;
-    constructor(growthUsecase?: GrowthUseCase) {
+  private growthUsecase: GrowthUseCase;
+  constructor(growthUsecase?: GrowthUseCase) {
     this.growthUsecase = growthUsecase ?? new GrowthUseCase();
   }
 

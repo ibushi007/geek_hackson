@@ -6,8 +6,8 @@ import { CreateReportInput } from "@/types/report";
 import { authenticate, handleError } from "@/server/utils/auth";
 
 export class ReportController {
-    private reportUsecase: ReportUseCase;
-    constructor(reportUsecase?: ReportUseCase) {
+  private reportUsecase: ReportUseCase;
+  constructor(reportUsecase?: ReportUseCase) {
     this.reportUsecase = reportUsecase ?? new ReportUseCase();
   }
 
@@ -39,7 +39,7 @@ export class ReportController {
       const reports = await this.reportUsecase.showReports(auth.userId);
       return NextResponse.json(reports, { status: 200 });
     } catch (error) {
-        return handleError(error, "Fetch reports");
+      return handleError(error, "Fetch reports");
     }
   }
 
@@ -47,17 +47,14 @@ export class ReportController {
     try {
       const auth = await authenticate();
       if ("error" in auth) return auth.error;
-      
+
       const report = await this.reportUsecase.getReportById(id);
 
       //権限チェック
       if (report.userId !== auth.userId) {
-        return NextResponse.json(
-          { error: "Forbidden" },
-          { status: 403 }
-        );
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
-      
+
       return NextResponse.json(report, { status: 200 });
     } catch (error) {
       return handleError(error, "Fetch report by id");
@@ -73,23 +70,17 @@ export class ReportController {
 
       //権限チェック
       if (existingReport.userId !== auth.userId) {
-        return NextResponse.json(
-          { error: "Forbidden" },
-          { status: 403 }
-        );
-    }
-    
-    //更新実行
-    const updatedReport = await this.reportUsecase.updateReport(
-      id,
-      body
-    );
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
 
-    return NextResponse.json(updatedReport, { status: 200 });
-  } catch (error) {
-    return this.handleError(error, "Update report");
+      //更新実行
+      const updatedReport = await this.reportUsecase.updateReport(id, body);
+
+      return NextResponse.json(updatedReport, { status: 200 });
+    } catch (error) {
+      return this.handleError(error, "Update report");
+    }
   }
-}
 
   async deleteReport(id: string) {
     try {
@@ -100,21 +91,19 @@ export class ReportController {
 
       //権限チェック
       if (existingReport.userId !== auth.userId) {
-        return NextResponse.json(
-          { error: "Forbidden" },
-          { status: 403 }
-        );
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
-      
+
       //削除実行
       await this.reportUsecase.deleteReport(id);
-      return NextResponse.json({ 
-        message: "Report deleted successfully" },
-        { status: 200 }
+      return NextResponse.json(
+        {
+          message: "Report deleted successfully",
+        },
+        { status: 200 },
       );
     } catch (error) {
       return this.handleError(error, "Delete report");
     }
   }
 }
-

@@ -82,7 +82,3 @@ export function AICoach({ message }: Props) {
     </div>
   );
 }
-
-
-
-

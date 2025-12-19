@@ -31,7 +31,9 @@ export default function EditLogPage() {
   const [linesChanged, setLinesChanged] = useState(0);
   const [changeSize, setChangeSize] = useState<"S" | "M" | "L">("M");
   const [prSummary, setPrSummary] = useState("");
-  const [techTags, setTechTags] = useState<Array<{ name: string; isNew: boolean }>>([]);
+  const [techTags, setTechTags] = useState<
+    Array<{ name: string; isNew: boolean }>
+  >([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,7 +59,7 @@ export default function EditLogPage() {
         }
 
         const data = await response.json();
-        
+
         // フォームに初期値を設定
         setTitle(data.title || "");
         setTodayLearning(data.todayLearning || "");
@@ -140,7 +142,7 @@ export default function EditLogPage() {
       toast.error(
         error instanceof Error
           ? error.message
-          : "日報の更新に失敗しました。もう一度お試しください"
+          : "日報の更新に失敗しました。もう一度お試しください",
       );
       setIsSubmitting(false);
     }

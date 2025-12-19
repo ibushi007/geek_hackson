@@ -184,4 +184,3 @@ export const aiCoachMessages = {
   newLog: "今日の学びを記録しましょう。1行でも大丈夫ですよ！",
   weekly: "一週間の振り返りは成長を実感できる大切な時間です ✨",
 };
-

@@ -10,13 +10,10 @@ export async function authenticate(): Promise<
   { userId: string } | { error: NextResponse }
 > {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.id) {
     return {
-      error: NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      ),
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
     };
   }
   return { userId: session.user.id };
@@ -30,25 +27,19 @@ export async function authenticate(): Promise<
  */
 export function handleError(error: unknown, context: string): NextResponse {
   console.error(`${context} failed:`, error);
-  
+
   if (error instanceof Error) {
     // エラーメッセージに応じてステータスコードを変更
     if (error.message === "Report not found") {
-      return NextResponse.json(
-        { error: "Report not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
     if (error.message.includes("required")) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
   }
 
   return NextResponse.json(
     { error: `Failed to ${context.toLowerCase()}` },
-    { status: 500 }
+    { status: 500 },
   );
 }

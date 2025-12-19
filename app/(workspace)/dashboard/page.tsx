@@ -6,7 +6,11 @@ import Link from "next/link";
 import { LogCard } from "@/components/LogCard";
 import { AICoach } from "@/components/AICoach";
 
-import { user, growthData as mockGrowthData, aiCoachMessages } from "@/lib/mock";
+import {
+  user,
+  growthData as mockGrowthData,
+  aiCoachMessages,
+} from "@/lib/mock";
 import type { GrowthData } from "@/types/growth";
 import type { ReportResponse, ShowReportsResponse } from "@/types/report";
 
@@ -135,7 +139,8 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm text-slate-500">今週のコミット</p>
               <p className="text-2xl font-bold text-slate-900">
-                {growthData?.weeklyCommits.reduce((a, b) => a + b.value, 0) ?? 0}
+                {growthData?.weeklyCommits.reduce((a, b) => a + b.value, 0) ??
+                  0}
                 <span className="text-sm font-normal text-slate-500">
                   {" "}
                   commits

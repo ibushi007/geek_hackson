@@ -63,11 +63,11 @@ export default function GrowthPage() {
 
   const weeklyMax = Math.max(
     ...weeklyCommitsWithIsToday.map((d) => d.value),
-    1
+    1,
   );
   const monthlyMax = Math.max(
     ...mockGrowthData.monthlyCommits.map((d) => d.value),
-    1
+    1,
   );
 
   if (loading) {
@@ -256,7 +256,3 @@ export default function GrowthPage() {
     </div>
   );
 }
-
-
-
-

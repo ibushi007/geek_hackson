@@ -60,4 +60,3 @@ export function TopBar() {
     </header>
   );
 }
-

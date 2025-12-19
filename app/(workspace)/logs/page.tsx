@@ -54,7 +54,9 @@ export default function LogsPage() {
               <BookOpen size={24} className="text-emerald-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">学習ログ一覧</h1>
+              <h1 className="text-3xl font-bold text-slate-900">
+                学習ログ一覧
+              </h1>
               <p className="text-sm text-slate-500">
                 {isLoading ? "読み込み中..." : `全${reports.length}件の日報`}
               </p>
@@ -82,7 +84,9 @@ export default function LogsPage() {
               </div>
               <div>
                 <p className="text-sm text-slate-500">総日報数</p>
-                <p className="text-2xl font-bold text-slate-900">{reports.length}</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {reports.length}
+                </p>
               </div>
             </div>
 
@@ -166,11 +170,13 @@ export default function LogsPage() {
               {/* Count Display */}
               <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <p className="text-sm text-slate-600">
-                  全 <span className="font-bold text-slate-900">{reports.length}</span> 件の日報
+                  全{" "}
+                  <span className="font-bold text-slate-900">
+                    {reports.length}
+                  </span>{" "}
+                  件の日報
                 </p>
-                <p className="text-xs text-slate-500">
-                  新しい順に表示
-                </p>
+                <p className="text-xs text-slate-500">新しい順に表示</p>
               </div>
 
               {/* Log Cards */}

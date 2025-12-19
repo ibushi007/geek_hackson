@@ -1,5 +1,9 @@
 import { ReportRepository } from "@/server/repository/ReportRepository";
-import { CreateReportInput, ReportResponse, ShowReportsResponse } from "@/types/report";
+import {
+  CreateReportInput,
+  ReportResponse,
+  ShowReportsResponse,
+} from "@/types/report";
 const reportRepository = new ReportRepository();
 
 export class ReportUseCase {
@@ -22,10 +26,10 @@ export class ReportUseCase {
     if (!input.githubUrl?.trim()) {
       throw new Error("githubUrl is required");
     }
-  
+
     // Repositoryを呼び出し（新しいフィールドに対応済み）
     const report = await reportRepository.create(userId, input);
-    
+
     // ✅ そのまま返す（Repositoryが既に正しい型を返す）
     return report;
   }
@@ -43,10 +47,10 @@ export class ReportUseCase {
   }
 
   /**
- * IDで日報を取得
- * @param id 日報ID
- * @returns 日報データ
- */
+   * IDで日報を取得
+   * @param id 日報ID
+   * @returns 日報データ
+   */
   async getReportById(id: string): Promise<ReportResponse> {
     const report = await reportRepository.findById(id);
 
@@ -58,10 +62,9 @@ export class ReportUseCase {
   }
 
   async updateReport(
-    id: string, 
-    body: Partial<CreateReportInput>
+    id: string,
+    body: Partial<CreateReportInput>,
   ): Promise<ReportResponse> {
-
     if (body.title && body.title.length > 300) {
       throw new Error("title must be less than 300 characters");
     }
@@ -69,7 +72,7 @@ export class ReportUseCase {
     if (body.todayLearning && body.todayLearning.length > 1000) {
       throw new Error("todayLearning must be less than 1000 characters");
     }
-    
+
     const report = await reportRepository.update(id, body);
     if (!report) {
       throw new Error("Report not found");

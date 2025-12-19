@@ -54,7 +54,3 @@ export function SkillMap({ skills }: Props) {
     </div>
   );
 }
-
-
-
-
