@@ -38,7 +38,7 @@ export type WeeklyDigest = {
 };
 
 export type GrowthData = {
-  weeklyCommits: { dayOfWeek: string; value: number, isToday: boolean }[];
+  weeklyCommits: { dayOfWeek: string; value: number; dateKey: string }[];
   monthlyCommits: { weekLabel: string; value: number }[];
   techSkillMap: { name: string; level: number; isNew: boolean }[];
   streak: number;
@@ -149,13 +149,13 @@ export const weeklyDigest: WeeklyDigest = {
 // ========================================
 export const growthData: GrowthData = {
   weeklyCommits: [
-    { dayOfWeek: "Mon", value: 8 },
-    { dayOfWeek: "Tue", value: 5 },
-    { dayOfWeek: "Wed", value: 12 },
-    { dayOfWeek: "Thu", value: 7 },
-    { dayOfWeek: "Fri", value: 3 },
-    { dayOfWeek: "Sat", value: 2 },
-    { dayOfWeek: "Sun", value: 1 },
+    { dayOfWeek: "Mon", value: 8, dateKey: "2025-12-16" },
+    { dayOfWeek: "Tue", value: 5, dateKey: "2025-12-17" },
+    { dayOfWeek: "Wed", value: 12, dateKey: "2025-12-18" },
+    { dayOfWeek: "Thu", value: 7, dateKey: "2025-12-19" },
+    { dayOfWeek: "Fri", value: 3, dateKey: "2025-12-20" },
+    { dayOfWeek: "Sat", value: 2, dateKey: "2025-12-21" },
+    { dayOfWeek: "Sun", value: 1, dateKey: "2025-12-22" },
   ],
   monthlyCommits: [
     { weekLabel: "W1", value: 21 },

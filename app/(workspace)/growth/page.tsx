@@ -41,10 +41,7 @@ export default function GrowthPage() {
         console.error("Error fetching growth data:", error);
         // エラー時はモックデータを使用
         setGrowthData({
-          weeklyCommits: mockGrowthData.weeklyCommits.map((c) => ({
-            ...c,
-            dateKey: "", // モックデータにはdateKeyがないため空文字
-          })),
+          weeklyCommits: mockGrowthData.weeklyCommits,
           streak: mockGrowthData.streak,
           momentum: mockGrowthData.momentum,
         });
@@ -57,10 +54,11 @@ export default function GrowthPage() {
   }, []);
 
   // dateKeyを使ってisTodayを判定した週間コミットデータ
+  const todayDateKey = getTodayDateKey();
   const weeklyCommitsWithIsToday: WeeklyCommitWithIsToday[] =
     growthData?.weeklyCommits.map((commit) => ({
       ...commit,
-      isToday: commit.dateKey === getTodayDateKey(),
+      isToday: commit.dateKey === todayDateKey,
     })) || [];
 
   const weeklyMax = Math.max(
@@ -160,29 +158,31 @@ export default function GrowthPage() {
                   key={day.dayOfWeek}
                   className="flex flex-1 flex-col items-center gap-2"
                 >
-                  <div
-                    className={`w-full rounded-full shadow-md transition-all ${
-                      day.isToday
-                        ? "bg-gradient-to-t from-emerald-400 to-emerald-600 shadow-emerald-300/80 ring-2 ring-emerald-400 ring-offset-2"
-                        : "bg-gradient-to-t from-emerald-300 to-emerald-500 shadow-emerald-200/60"
-                    }`}
-                    style={{
-                      height: `${Math.max((day.value / weeklyMax) * 140, 8)}px`,
-                    }}
-                  />
+                  {day.value > 0 && (
+                    <div
+                      className="w-full rounded-full bg-gradient-to-t from-emerald-300 to-emerald-500 shadow-md shadow-emerald-200/60 transition-all"
+                      style={{
+                        height: `${Math.max((day.value / weeklyMax) * 140, 8)}px`,
+                      }}
+                    />
+                  )}
                   <span
                     className={`text-xs font-semibold ${
-                      day.isToday ? "text-emerald-700 font-bold" : "text-slate-500"
+                      day.isToday
+                        ? "text-slate-700 border-b-2 border-emerald-600 pb-0.5"
+                        : "text-slate-500"
                     }`}
                   >
                     {day.dayOfWeek}
                   </span>
-                  <span
-                    className={`text-xs font-bold ${
-                      day.isToday ? "text-emerald-700" : "text-slate-700"
-                    }`}
-                  >
-                    {day.value}
+                  <span className="text-xs font-bold text-slate-700">
+                    {day.dateKey && day.dateKey > todayDateKey
+                      ? "-"
+                      : day.dateKey === todayDateKey
+                        ? day.value > 0
+                          ? day.value
+                          : "-"
+                        : day.value}
                   </span>
                 </div>
               ))}
