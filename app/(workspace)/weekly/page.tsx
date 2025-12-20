@@ -229,7 +229,7 @@ export default function WeeklyPage() {
           <p className="mt-2 text-3xl font-bold text-slate-900">
             {weeklyStats.weeklyMomentum}
           </p>
-          <p className="text-sm text-slate-500">Momentum Score</p>
+          <p className="text-sm text-slate-500">Weekly Momentum Score</p>
         </div>
 
         {/* 新技術 */}
