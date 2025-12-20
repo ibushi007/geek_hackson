@@ -439,7 +439,7 @@ export default function NewLogPage() {
             {/* Auto Summary */}
             <div className="mt-4 rounded-xl bg-slate-50 p-4">
               <p className="mb-1 text-xs font-semibold text-slate-500">
-                作業内容（AI整形）
+                作業内容
               </p>
               <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">
                 {githubStats.prSummary || "本日の活動なし"}
