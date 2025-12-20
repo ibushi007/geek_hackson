@@ -2,15 +2,10 @@
 
 import { Sparkles, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
-
-type Skill = {
-  name: string;
-  level: number;
-  isNew: boolean;
-};
+import type { SkillMapData } from "@/types/growth";
 
 type Props = {
-  skills: Skill[];
+  skills: SkillMapData;
 };
 
 const DEFAULT_DISPLAY_COUNT = 5; // デフォルトで表示するスキル数
@@ -20,15 +15,9 @@ export function SkillMap({ skills }: Props) {
   const [showInfo, setShowInfo] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
-  // 合計が100%になるように、各スキルのlevelをそのままパーセンテージとして使用
-  const normalizedSkills = skills.map((skill) => ({
-    ...skill,
-    normalizedLevel: skill.level, // levelをそのままパーセンテージとして使用
-    originalLevel: skill.level,
-  }));
-
-  const sortedSkills = [...normalizedSkills].sort(
-    (a, b) => b.normalizedLevel - a.normalizedLevel,
+  // percentageをそのまま使用（既に正規化されている）
+  const sortedSkills = [...skills].sort(
+    (a, b) => b.percentage - a.percentage,
   );
 
   // 表示するスキルを決定
@@ -38,7 +27,7 @@ export function SkillMap({ skills }: Props) {
   const hasMoreSkills = sortedSkills.length > DEFAULT_DISPLAY_COUNT;
 
   // 最大値のスキルを取得（マーカー表示用）
-  const maxSkill = sortedSkills[0];
+  const maxSkill = sortedSkills[0] || { percentage: 0 };
 
   return (
     <div className="glass-card rounded-2xl p-5">
@@ -89,33 +78,21 @@ export function SkillMap({ skills }: Props) {
           <div key={skill.name}>
             <div className="mb-1.5 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
-                {skill.isNew && (
-                  <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                    NEW
-                  </span>
-                )}
                 {skill.name}
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-slate-600">
-                  {skill.normalizedLevel}%
-                </span>
-                <span className="text-xs text-slate-400">
-                  ({skill.originalLevel})
+                  {skill.percentage}%
                 </span>
               </div>
             </div>
             <div className="relative h-2.5 overflow-hidden rounded-full bg-slate-100">
               <div
-                className={`h-full rounded-full transition-all duration-700 ease-out ${
-                  skill.isNew
-                    ? "bg-gradient-to-r from-emerald-400 to-teal-500"
-                    : "bg-gradient-to-r from-slate-400 to-slate-500"
-                }`}
-                style={{ width: `${skill.normalizedLevel}%` }}
+                className="h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-slate-400 to-slate-500"
+                style={{ width: `${skill.percentage}%` }}
               />
               {/* 最大値のスキルには特別なマーカー */}
-              {skill.normalizedLevel === maxSkill.normalizedLevel && (
+              {skill.percentage === maxSkill.percentage && (
                 <div className="absolute right-0 top-0 h-full w-0.5 bg-emerald-600" />
               )}
             </div>
