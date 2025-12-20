@@ -7,6 +7,7 @@ import {
   TrendingUp,
   Mail,
   Star,
+  GitCommit,
 } from "lucide-react";
 import { AICoach } from "@/components/AICoach";
 import { weeklyDigest, aiCoachMessages } from "@/lib/mock";
@@ -61,7 +62,7 @@ export default function WeeklyPage() {
       {/* Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="glass-card rounded-2xl p-5 text-center">
-          <GitPullRequest size={24} className="mx-auto text-emerald-500" />
+          <GitCommit size={24} className="mx-auto text-emerald-500" />
           <p className="mt-2 text-3xl font-bold text-slate-900">
             {weeklyDigest.prCount}
           </p>
