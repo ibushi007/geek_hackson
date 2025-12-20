@@ -109,13 +109,6 @@ export default function DashboardPage() {
             <PenLine size={16} />
             今日の日報を書く
           </Link>
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-          >
-            <LogOut size={16} />
-            ログアウト
-          </button>
         </div>
       </div>
 
