@@ -15,6 +15,7 @@ import {
   Calendar,
   Award,
   Star,
+  GitCommit,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AICoach } from "@/components/AICoach";
@@ -207,7 +208,7 @@ export default function WeeklyPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* コミット数 */}
         <div className="glass-card rounded-2xl p-5 text-center">
-          <GitPullRequest size={24} className="mx-auto text-emerald-500" />
+          <GitCommit size={24} className="mx-auto text-emerald-500" />
           <p className="mt-2 text-3xl font-bold text-slate-900">
             {weeklyStats.totalCommits}
           </p>
