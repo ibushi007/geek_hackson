@@ -88,11 +88,19 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <img
-              src={session?.user?.image || ""}
-              alt="GitHub Avatar"
-              className="w-8 h-8 rounded-full border-2 border-slate-200"
-            />
+            {session?.user?.image ? (
+              <img
+                src={session.user.image}
+                alt="GitHub Avatar"
+                className="w-8 h-8 rounded-full border-2 border-slate-200"
+              />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-200 bg-gradient-to-br from-emerald-400 to-teal-500 text-white">
+                <span className="text-xs font-bold">
+                  {session?.user?.name?.[0]?.toUpperCase() || "U"}
+                </span>
+              </div>
+            )}
             <p className="text-sm font-semibold text-slate-500">
               おかえりなさい、{session?.user?.name}さん
             </p>
