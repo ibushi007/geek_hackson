@@ -42,6 +42,7 @@ export default function DashboardPage() {
           weeklyCommits: mockGrowthData.weeklyCommits,
           streak: mockGrowthData.streak,
           momentum: mockGrowthData.momentum,
+          skillMap: mockGrowthData.skillMap,
         });
       } finally {
         setGrowthLoading(false);

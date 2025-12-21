@@ -21,3 +21,4 @@ const customJestConfig = {
 
 // createJestConfigは非同期なので、このようにエクスポートします
 module.exports = createJestConfig(customJestConfig);
+
