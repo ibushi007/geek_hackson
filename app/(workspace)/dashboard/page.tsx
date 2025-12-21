@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PenLine, TrendingUp, Zap } from "lucide-react";
+import { PenLine, TrendingUp, Zap, LogOut } from "lucide-react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 import { LogCard } from "@/components/LogCard";
 import { AICoach } from "@/components/AICoach";
 
@@ -15,6 +16,8 @@ import type { GrowthData } from "@/types/growth";
 import type { ReportResponse, ShowReportsResponse } from "@/types/report";
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
+
   // ===== growth (/api/growth) =====
   const [growthData, setGrowthData] = useState<GrowthData | null>(null);
   const [growthLoading, setGrowthLoading] = useState(true);
@@ -39,6 +42,7 @@ export default function DashboardPage() {
           weeklyCommits: mockGrowthData.weeklyCommits,
           streak: mockGrowthData.streak,
           momentum: mockGrowthData.momentum,
+          skillMap: mockGrowthData.skillMap,
         });
       } finally {
         setGrowthLoading(false);
@@ -84,20 +88,37 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-semibold text-slate-500">
-            おかえりなさい、{user.name}さん
-          </p>
+          <div className="flex items-center gap-3 mb-2">
+            {session?.user?.image ? (
+              <img
+                src={session.user.image}
+                alt="GitHub Avatar"
+                className="w-8 h-8 rounded-full border-2 border-slate-200"
+              />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-200 bg-gradient-to-br from-emerald-400 to-teal-500 text-white">
+                <span className="text-xs font-bold">
+                  {session?.user?.name?.[0]?.toUpperCase() || "U"}
+                </span>
+              </div>
+            )}
+            <p className="text-sm font-semibold text-slate-500">
+              おかえりなさい、{session?.user?.name}さん
+            </p>
+          </div>
           <h1 className="text-3xl font-bold text-slate-900">
             Learning Dashboard
           </h1>
         </div>
-        <Link
-          href="/log/new"
-          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-200 transition hover:-translate-y-0.5 hover:shadow-lg"
-        >
-          <PenLine size={16} />
-          今日の日報を書く
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/log/new"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-200 transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            <PenLine size={16} />
+            今日の日報を書く
+          </Link>
+        </div>
       </div>
 
       {/* Quick Stats */}

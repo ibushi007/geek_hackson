@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Flame, Github } from "lucide-react";
+import { Flame, LogOut } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
 import { user } from "@/lib/mock";
 import type { GrowthData } from "@/types/growth";
 
 export function TopBar() {
+  const { data: session } = useSession();
   const [streak, setStreak] = useState<number | null>(null);
 
   useEffect(() => {
@@ -49,13 +51,32 @@ export function TopBar() {
 
         {/* User Avatar */}
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 overflow-hidden rounded-full bg-slate-200">
-            <Github size={32} className="text-slate-600" />
-          </div>
+          {session?.user?.image ? (
+            <img
+              src={session.user.image}
+              alt="GitHub Avatar"
+              className="h-8 w-8 rounded-full border-2 border-slate-200"
+            />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-200 bg-gradient-to-br from-emerald-400 to-teal-500 text-white">
+              <span className="text-xs font-bold">
+                {(session?.user?.name || user.name)?.[0]?.toUpperCase() || "U"}
+              </span>
+            </div>
+          )}
           <span className="hidden text-sm font-semibold text-slate-700 sm:block">
-            {user.name}
+            {session?.user?.name || user.name}
           </span>
         </div>
+
+        {/* Logout Button */}
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+        >
+          <LogOut size={16} />
+          <span className="hidden sm:block">ログアウト</span>
+        </button>
       </div>
     </header>
   );
