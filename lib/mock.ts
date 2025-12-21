@@ -41,7 +41,6 @@ export type GrowthData = {
   weeklyCommits: { dayOfWeek: string; value: number; dateKey: string }[];
   monthlyCommits: { weekLabel: string; value: number }[];
   techSkillMap: { name: string; level: number; isNew: boolean }[];
-  skillMap: { name: string; percentage: number }[];
   streak: number;
   momentum: number; // Learning Momentum score
 };
@@ -172,15 +171,6 @@ export const growthData: GrowthData = {
     { name: "CSS", level: 8, isNew: false },
     { name: "SQL", level: 4, isNew: false },
     { name: "Python", level: 3, isNew: true },
-  ],
-  skillMap: [
-    { name: "TypeScript", percentage: 35 },
-    { name: "React", percentage: 25 },
-    { name: "JavaScript", percentage: 15 },
-    { name: "Prisma", percentage: 10 },
-    { name: "CSS", percentage: 8 },
-    { name: "SQL", percentage: 4 },
-    { name: "Python", percentage: 3 },
   ],
   streak: 7,
   momentum: 78,
