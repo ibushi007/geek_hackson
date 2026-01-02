@@ -10,6 +10,13 @@ interface GitHubProfile {
 }
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  useSecureCookies: false,
+
+  pages: {
+    signIn: "/login",
+  },
+
   providers: [
     GitHub({
       clientId: process.env.GITHUB_ID!,
@@ -75,8 +82,8 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-  },
-  secret: process.env.NEXTAUTH_SECRET,
+  }, // callbacks の終わり
+
 };
 
 const handler = NextAuth(authOptions);

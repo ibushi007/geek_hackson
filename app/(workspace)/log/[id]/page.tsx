@@ -28,7 +28,8 @@ export default function LogDetailPage() {
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/reports/${logId}`);
+        
+        const response = await fetch(`/api/log/${logId}`);
 
         if (!response.ok) {
           if (response.status === 404) {

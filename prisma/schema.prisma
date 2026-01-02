@@ -1,53 +1,40 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// datasource と generator はそのまま
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-//このテーブルは後からでも良いのでいったん考えなくていい。
 model User {
-  id        String        @id @default(uuid())
-  githubId  String        @unique
-  name      String?
-  avatarUrl String?
-
+  id           String        @id @default(uuid())
+  githubId     String        @unique
+  name         String?
+  avatarUrl    String?
+  createdAt    DateTime      @default(now()) // いつ登録したか分かると便利
   dailyReports DailyReport[]
 }
 
-//まずこのデイリーレポートテーブルを理解しましょう
 model DailyReport {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid())
+  
+  // 修正ポイント：最初は「誰のものか不明」でもOKなように ? をつけておきます
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id])
+  
+  createdAt      DateTime @default(now())
   
   // ========== 基本情報 ==========
-  title           String            // 🆕 日報タイトル
-  todayLearning   String            // 🆕 今日の学び
-  struggles       String?           // 詰まったところ（任意）
-  tomorrow        String?           // 明日やること(任意)
+  title          String
+  todayLearning  String
+  struggles      String?
+  tomorrow       String?
 
-  
   // ========== GitHub統計 ==========
-  githubUrl       String            // GitHub URL（既存）
-  prCount         Int     @default(0)     // 🆕 PR数
-  commitCount     Int     @default(0)     // 🆕 コミット数
-  linesChanged    Int     @default(0)     // 🆕 変更行数
-  changeSize      String  @default("M")   // 🆕 変更規模（S/M/L）
+  githubUrl      String
+  prCount        Int      @default(0)
+  commitCount    Int      @default(0)
+  linesChanged   Int      @default(0)
+  changeSize     String   @default("M")
   
   // ========== AI生成コンテンツ ==========
-  prSummary       String            // 🆕 PR要約
-  aiCoachComment  String?           // 🆕 AIコーチコメント
+  prSummary      String
+  aiCoachComment String?
   
   // ========== 技術タグ ==========
-  techTags        Json?             // 🆕 [{ name: "Next.js", isNew: true }]
+  techTags       Json?
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { signOut } from "next-auth/react"; // 1. インポートを追加// アイコンのインポート（すでにあるはず）
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -72,7 +73,15 @@ export function Sidebar() {
           </span>
           設定
         </button>
-        <button className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 transition hover:bg-red-500/10 hover:text-red-400">
+        <button
+          onClick={() =>
+            signOut({
+              callbackUrl: "http://localhost:3001/login", // 相対パスではなくフルURLで指定
+              redirect: true,
+            })
+          }
+          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 transition hover:bg-red-500/10 hover:text-red-400"
+        >
           <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10">
             <LogOut size={18} />
           </span>
