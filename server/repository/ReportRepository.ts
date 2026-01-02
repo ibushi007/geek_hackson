@@ -118,4 +118,37 @@ export class ReportRepository {
       techTags: report.techTags as TechTag[] | null,
     };
   }
+
+  /**
+ * 指定した日付のユーザーの日報を取得
+ * @param userId ユーザーID
+ * @param date 日付（YYYY-MM-DD形式）
+ * @returns 日報データ（存在しない場合はnull）
+ */
+  async findByUserIdAndDate(
+    userId: string, 
+    date: string
+  ): Promise<ReportResponse | null> {
+    // JST基準で日付範囲を計算
+    const startOfDay = new Date(`${date}T00:00:00+09:00`);
+    const endOfDay = new Date(`${date}T23:59:59+09:00`);
+
+    const report = await prisma.dailyReport.findFirst({
+      where: {
+        userId,
+        createdAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+    });
+
+    if (!report) return null;
+
+    return {
+      ...report,
+      changeSize: report.changeSize as ChangeSize,
+      techTags: report.techTags as TechTag[] | null,
+    };
+  }
 }

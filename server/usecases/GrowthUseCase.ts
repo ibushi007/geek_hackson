@@ -1,6 +1,6 @@
-import { GrowthData, WeeklyCommits } from "@/types/growth";
+import { GrowthData, WeeklyCommits, SkillMapData } from "@/types/growth";
 import { ReportRepository } from "@/server/repository/ReportRepository";
-import { ReportResponse } from "@/types/report";
+import { ReportResponse, TechTag } from "@/types/report";
 
 export class GrowthUseCase {
   private reportRepository: ReportRepository;
@@ -15,11 +15,13 @@ export class GrowthUseCase {
     const streak = this.calculateStreak(reports);
     // 最新の日報を取得して学習モメンタムを計算
     const momentum = this.calculateMomentum(reports[0]);
+    const skillMap = this.calculateSkillMap(reports);
 
     return {
       weeklyCommits,
       streak,
       momentum,
+      skillMap,
     };
   }
 
@@ -162,5 +164,72 @@ export class GrowthUseCase {
   private getDayOfWeek(date: Date): string {
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     return dayNames[date.getDay()];
+  }
+
+  /**
+   * スキルマップデータを計算します（今週の月曜日から今日までのtechTagsを集計）
+   * @param reports 降順ソートされた日報一覧
+   * @returns スキルマップデータ（各techTagの割合が100%になるように正規化）
+   */
+  private calculateSkillMap(reports: ReportResponse[]): SkillMapData {
+    const today = new Date();
+    const currentDay = today.getDay(); // 0:Sun, 1:Mon, ..., 6:Sat
+
+    // 今週の月曜日を算出する
+    const diffToMonday = currentDay === 0 ? 6 : currentDay - 1;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - diffToMonday);
+
+    // 今週の月曜日から今日までの日報を取得
+    // 日曜日(0)の場合は月曜日から日曜日まで（0から6まで、7日間）
+    // それ以外は月曜日(0)から今日まで
+    const daysToCheck = currentDay === 0 ? 7 : currentDay;
+    const weeklyReports: ReportResponse[] = [];
+    
+    for (let i = 0; i <= daysToCheck; i++) {
+      const targetDate = new Date(monday);
+      targetDate.setDate(monday.getDate() + i);
+      const targetDateKey = this.toDateKey(targetDate);
+
+      const foundReport = reports.find(
+        (report) => this.toDateKey(report.createdAt) === targetDateKey,
+      );
+
+      if (foundReport) {
+        weeklyReports.push(foundReport);
+      }
+    }
+
+    // techTagsを集計
+    const tagCountMap = new Map<string, number>();
+    let totalCount = 0;
+
+    for (const report of weeklyReports) {
+      if (report.techTags && Array.isArray(report.techTags)) {
+        for (const tag of report.techTags) {
+          const tagName = tag.name;
+          const currentCount = tagCountMap.get(tagName) || 0;
+          tagCountMap.set(tagName, currentCount + 1);
+          totalCount++;
+        }
+      }
+    }
+
+    // 全体が100%になるように正規化
+    const skillMap: SkillMapData = [];
+    if (totalCount > 0) {
+      for (const [tagName, count] of tagCountMap.entries()) {
+        skillMap.push({
+          name: tagName,
+          // 少数第二位までの精度で四捨五入
+          percentage: Math.round((count / totalCount) * 100 * 100) / 100, // 小数点第2位まで
+        });
+      }
+    }
+
+    // パーセンテージが高い順にソート
+    skillMap.sort((a, b) => b.percentage - a.percentage);
+
+    return skillMap;
   }
 }

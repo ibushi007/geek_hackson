@@ -8,6 +8,8 @@ declare module "next-auth" {
       name?: string | null;
       image?: string | null;
     };
+    accessToken?: string;
+    tokenExpiry?: Date;
   }
 
   interface User {
@@ -19,5 +21,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     githubId?: string;
+    accessToken?: string;
+    tokenExpiry?: Date;
   }
 }
