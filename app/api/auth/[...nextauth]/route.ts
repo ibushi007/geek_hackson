@@ -7,7 +7,6 @@ interface GitHubProfile {
   login: string;
   name?: string;
   avatar_url?: string;
-  access_token?: string;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -39,13 +38,11 @@ export const authOptions: NextAuthOptions = {
             update: {
               name: githubProfile.name || null,
               avatarUrl: githubProfile.avatar_url || null,
-              accessToken: account.access_token || null,
             },
             create: {
               githubId: githubProfile.login,
               name: githubProfile.name || null,
               avatarUrl: githubProfile.avatar_url || null,
-              accessToken: account.access_token || null,
             },
           });
         } catch (error) {
@@ -85,8 +82,7 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-  }, // callbacks の終わり
-
+  },
 };
 
 const handler = NextAuth(authOptions);

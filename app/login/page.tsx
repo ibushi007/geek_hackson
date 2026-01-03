@@ -10,7 +10,7 @@ export default function LoginPage() {
         <p className="text-slate-400 mb-8">ここからログイン処理を行います</p>
         
         <button 
-          onClick={() => signIn("github", { callbackUrl: "/dashboard" })} // ← ここを変更
+          onClick={() => signIn("github", { callbackUrl: "/log/new" })} // ← ここを変更
           className="rounded-lg bg-blue-600 px-6 py-2 hover:bg-blue-700"
         >
           GitHubでログインする

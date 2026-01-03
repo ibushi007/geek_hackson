@@ -19,7 +19,6 @@ export default function GrowthPage() {
   const [growthData, setGrowthData] = useState<GrowthData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 今日の日付をYYYY-MM-DD形式で取得
   const getTodayDateKey = (): string => {
     const today = new Date();
     const year = today.getFullYear();
@@ -39,7 +38,6 @@ export default function GrowthPage() {
         setGrowthData(data);
       } catch (error) {
         console.error("Error fetching growth data:", error);
-        // エラー時はモックデータを使用
         setGrowthData({
           weeklyCommits: mockGrowthData.weeklyCommits,
           streak: mockGrowthData.streak,
@@ -57,7 +55,6 @@ export default function GrowthPage() {
     fetchGrowthData();
   }, []);
 
-  // dateKeyを使ってisTodayを判定した週間コミットデータ
   const todayDateKey = getTodayDateKey();
   const weeklyCommitsWithIsToday: WeeklyCommitWithIsToday[] =
     growthData?.weeklyCommits.map((commit) => ({
@@ -124,7 +121,6 @@ export default function GrowthPage() {
 
       {/* Commit Graph */}
       <div className="glass-card rounded-2xl p-5">
-        {/* Tab */}
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setActiveTab("weekly")}
@@ -157,19 +153,22 @@ export default function GrowthPage() {
               週間コミット数
             </p>
             <div className="flex items-end gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              {weeklyCommitsWithIsToday.map((day) => (
+              {/* indexを追加してkeyを確実にユニークにする */}
+              {weeklyCommitsWithIsToday.map((day, index) => (
                 <div
-                  key={day.dayOfWeek}
+                  key={`${day.dayOfWeek}-${index}`}
                   className="flex flex-1 flex-col items-center gap-2"
                 >
-                  {day.value > 0 && (
-                    <div
-                      className="w-full rounded-full bg-gradient-to-t from-emerald-300 to-emerald-500 shadow-md shadow-emerald-200/60 transition-all"
-                      style={{
-                        height: `${Math.max((day.value / weeklyMax) * 140, 8)}px`,
-                      }}
-                    />
-                  )}
+                  <div className="relative w-full flex flex-col items-center justify-end h-[140px]">
+                    {day.value > 0 && (
+                      <div
+                        className="w-full rounded-full bg-gradient-to-t from-emerald-300 to-emerald-500 shadow-md shadow-emerald-200/60 transition-all"
+                        style={{
+                          height: `${Math.max((day.value / weeklyMax) * 140, 8)}px`,
+                        }}
+                      />
+                    )}
+                  </div>
                   <span
                     className={`text-xs font-semibold ${
                       day.isToday
@@ -201,17 +200,19 @@ export default function GrowthPage() {
               月間コミット数（週ごと）
             </p>
             <div className="flex items-end gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-inner shadow-slate-200/60">
-              {mockGrowthData.monthlyCommits.map((week) => (
+              {mockGrowthData.monthlyCommits.map((week, index) => (
                 <div
-                  key={week.weekLabel}
+                  key={`${week.weekLabel}-${index}`}
                   className="flex flex-1 flex-col items-center gap-2"
                 >
-                  <div
-                    className="w-full rounded-2xl bg-gradient-to-t from-emerald-200 via-emerald-400 to-emerald-600 shadow-md shadow-emerald-200/50"
-                    style={{
-                      height: `${Math.max((week.value / monthlyMax) * 140, 8)}px`,
-                    }}
-                  />
+                  <div className="relative w-full flex flex-col items-center justify-end h-[140px]">
+                    <div
+                      className="w-full rounded-2xl bg-gradient-to-t from-emerald-200 via-emerald-400 to-emerald-600 shadow-md shadow-emerald-200/50"
+                      style={{
+                        height: `${Math.max((week.value / monthlyMax) * 140, 8)}px`,
+                      }}
+                    />
+                  </div>
                   <span className="text-xs font-semibold text-slate-500">
                     {week.weekLabel}
                   </span>
@@ -252,12 +253,8 @@ export default function GrowthPage() {
         </div>
       </div>
 
-      {/* Skill Map */}
-      <SkillMap
-        skills={growthData?.skillMap || []}
-      />
+      <SkillMap skills={growthData?.skillMap || []} />
 
-      {/* AI Coach */}
       <AICoach message={aiCoachMessages.growth} />
     </div>
   );
