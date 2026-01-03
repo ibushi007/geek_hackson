@@ -1,63 +1,96 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PenLine, TrendingUp, Zap } from "lucide-react";
+import { PenLine, TrendingUp, Zap, Sparkles } from "lucide-react"; // Sparklesを追加
 import Link from "next/link";
 import { LogCard } from "@/components/LogCard";
 import { AICoach } from "@/components/AICoach";
 
-import {
-  user,
-  growthData as mockGrowthData,
-  aiCoachMessages,
-} from "@/lib/mock";
+import { user, growthData as mockGrowthData } from "@/lib/mock"; // aiCoachMessagesは動的に生成するので削除
 import type { GrowthData } from "@/types/growth";
 import type { ReportResponse, ShowReportsResponse } from "@/types/report";
 
 export default function DashboardPage() {
-  // ===== growth (/api/growth) =====
   const [growthData, setGrowthData] = useState<GrowthData | null>(null);
   const [growthLoading, setGrowthLoading] = useState(true);
-
-  // ===== reports (/api/reports) =====
   const [reports, setReports] = useState<ReportResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ---- fetch growth ----
+  // --- 成長ステージの判定ロジック ---
+  const streak = growthData?.streak ?? 0;
+  const getGrowthStage = () => {
+    if (streak >= 10)
+      return {
+        icon: "🌳",
+        label: "大樹",
+        color: "text-emerald-600",
+        bg: "bg-emerald-50",
+      };
+    if (streak >= 7)
+      return {
+        icon: "🌸",
+        label: "開花",
+        color: "text-pink-600",
+        bg: "bg-pink-50",
+      };
+    if (streak >= 4)
+      return {
+        icon: "🌷",
+        label: "つぼみ",
+        color: "text-amber-600",
+        bg: "bg-amber-50",
+      };
+    if (streak > 0)
+      return {
+        icon: "🌱",
+        label: "新芽",
+        color: "text-blue-500",
+        bg: "bg-blue-50",
+      };
+    return {
+      icon: "🌚",
+      label: "種",
+      color: "text-slate-400",
+      bg: "bg-slate-50",
+    };
+  };
+  const stage = getGrowthStage();
+
   useEffect(() => {
     const fetchGrowthData = async () => {
       try {
         const response = await fetch("/api/growth");
-        if (!response.ok) throw new Error("Failed to fetch growth data");
+        if (!response.ok) throw new Error("Failed");
         const data: GrowthData = await response.json();
         setGrowthData(data);
       } catch (err) {
         console.error("Error fetching growth data:", err);
-        // エラー時はモックデータへフォールバック
+        // 足りなかった skillMap を追加してエラーを消します
         setGrowthData({
           weeklyCommits: mockGrowthData.weeklyCommits,
           streak: mockGrowthData.streak,
           momentum: mockGrowthData.momentum,
+          // もし skillMap が必要なら、モックデータから取得するか空配列を入れます
+          skillMap:
+            (mockGrowthData as any).techSkillMap?.map((skill: any) => ({
+              name: skill.name,
+              percentage: skill.level,
+            })) || [],
         });
       } finally {
         setGrowthLoading(false);
       }
     };
-
     fetchGrowthData();
   }, []);
 
-  // ---- fetch reports ----
   useEffect(() => {
     const fetchReports = async () => {
       try {
         setIsLoading(true);
-        setError(null);
-
         const response = await fetch("/api/reports");
         if (!response.ok) throw new Error("日報の取得に失敗しました");
-
         const data: ShowReportsResponse = await response.json();
         setReports(data.reports);
       } catch (err) {
@@ -66,11 +99,9 @@ export default function DashboardPage() {
         setIsLoading(false);
       }
     };
-
     fetchReports();
   }, []);
 
-  // growth は上部の数字に直結するので、最低限ロード中表示を入れる（reports はセクション内で表示済み）
   if (growthLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -102,24 +133,44 @@ export default function DashboardPage() {
 
       {/* Quick Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="glass-card rounded-2xl p-5">
+        {/* 学習ストリーク：植物進化デザイン */}
+        <div
+          className={`glass-card rounded-2xl p-5 border-l-4 transition-all duration-700 ${
+            streak >= 10
+              ? "border-emerald-500"
+              : streak >= 7
+                ? "border-pink-400"
+                : streak >= 4
+                  ? "border-amber-400"
+                  : streak > 0
+                    ? "border-blue-400"
+                    : "border-slate-200"
+          }`}
+        >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100">
-              <span className="text-lg">🔥</span>
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-xl text-2xl ${stage.bg}`}
+            >
+              {stage.icon}
             </div>
             <div>
               <p className="text-sm text-slate-500">学習ストリーク</p>
               <p className="text-2xl font-bold text-slate-900">
-                {growthData?.streak ?? 0}日連続
+                {streak}日連続
               </p>
             </div>
           </div>
+          <p
+            className={`mt-2 text-[10px] font-bold uppercase tracking-wider ${stage.color}`}
+          >
+            Stage: {stage.label}
+          </p>
         </div>
 
         <div className="glass-card rounded-2xl p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100">
-              <TrendingUp size={20} className="text-emerald-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
+              <TrendingUp size={24} className="text-emerald-600" />
             </div>
             <div>
               <p className="text-sm text-slate-500">Learning Momentum</p>
@@ -133,8 +184,8 @@ export default function DashboardPage() {
 
         <div className="glass-card rounded-2xl p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100">
-              <Zap size={20} className="text-blue-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
+              <Zap size={24} className="text-blue-600" />
             </div>
             <div>
               <p className="text-sm text-slate-500">今週のコミット</p>
@@ -166,14 +217,7 @@ export default function DashboardPage() {
         <div className="space-y-4">
           {isLoading ? (
             <div className="flex min-h-[200px] items-center justify-center">
-              <div className="text-center">
-                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
-                <p className="mt-4 text-sm text-slate-500">読み込み中...</p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="flex min-h-[200px] items-center justify-center">
-              <p className="text-sm text-red-600">{error}</p>
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
             </div>
           ) : reports.length === 0 ? (
             <div className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50">
@@ -191,8 +235,20 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* AI Coach */}
-      <AICoach message={aiCoachMessages.dashboard} />
+      {/* AI Coach: 植物の成長に合わせてセリフを変える */}
+      <AICoach
+        message={
+          streak >= 10
+            ? "素晴らしい！あなたの努力は大樹のように根を張り、周囲に良い影響を与えていますよ。"
+            : streak >= 7
+              ? "綺麗な花が咲きましたね！この調子で毎日水をあげるように学習を続けましょう。"
+              : streak >= 4
+                ? "つぼみが膨らんできました！三日坊主を乗り越えた今のあなたなら大丈夫です。"
+                : streak > 0
+                  ? "小さな芽が出ましたね。焦らず、一歩ずつ育てていきましょう。"
+                  : "今日から新しい種をまきませんか？最初の一歩が一番大きな成長に繋がります。"
+        }
+      />
     </div>
   );
 }

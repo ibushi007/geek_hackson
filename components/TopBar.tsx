@@ -3,29 +3,35 @@
 import { useState, useEffect } from "react";
 import { Flame, Github } from "lucide-react";
 import { user } from "@/lib/mock";
-import type { GrowthData } from "@/types/growth";
+// growthData のインポートを削除
 
 export function TopBar() {
-  // 名前とアイコンURLを保存する箱を作る
   const [userName, setUserName] = useState<string>("Loading...");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [streak, setStreak] = useState<number | null>(null);
+  // ストリーク数を管理するステートを追加
+  const [streak, setStreak] = useState<number>(0);
+
   useEffect(() => {
     const fetchGitHubData = async () => {
       try {
-        // あなたのGitHub情報を取得するAPIを叩く
-        const response = await fetch(
+        // 1. GitHub ユーザー情報を取得
+        const githubRes = await fetch(
           `https://api.github.com/users/${user.name}`
         );
-        if (!response.ok) throw new Error("GitHubデータの取得に失敗");
+        if (githubRes.ok) {
+          const githubData = await githubRes.json();
+          setUserName(githubData.name || githubData.login);
+          setAvatarUrl(githubData.avatar_url);
+        }
 
-        const data = await response.json();
-
-        // 取得した「本物のデータ」をセットする
-        setUserName(data.name || data.login); // 名前がなければIDを表示
-        setAvatarUrl(data.avatar_url); // アイコンのURLをセット
+        // 2. 作成した本物の API (/api/growth) からストリークを取得
+        const growthRes = await fetch("/api/growth");
+        if (growthRes.ok) {
+          const growthData = await growthRes.json();
+          setStreak(growthData.streak ?? 0); // 本物の数値をセット
+        }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
@@ -47,9 +53,33 @@ export function TopBar() {
       {/* Right: User info & Streak */}
       <div className="ml-auto flex items-center gap-4">
         {/* Streak Badge */}
-        <div className="flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-600">
-          <Flame size={16} className="streak-fire text-orange-500" />
-          <span>{streak !== null ? streak : user.streak}日連続</span>
+        <div
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all duration-700 ${
+            streak >= 10
+              ? "bg-emerald-100 text-emerald-700" // 10日以上（木）
+              : streak >= 7
+                ? "bg-pink-50 text-pink-600" // 7日以上（花）
+                : streak >= 4
+                  ? "bg-yellow-50 text-yellow-600" // 4日以上（つぼみ）
+                  : streak > 0
+                    ? "bg-blue-50 text-blue-500" // 1-3日（芽）
+                    : "bg-slate-100 text-slate-400 opacity-60" // 0日
+          }`}
+        >
+          {/* ストリーク数に応じた進化アイコン */}
+          <span className="text-base">
+            {streak >= 10
+              ? "🌳"
+              : streak >= 7
+                ? "🌸"
+                : streak >= 4
+                  ? "🌷"
+                  : streak > 0
+                    ? "🌱"
+                    : ""}
+          </span>
+
+          <span>{streak}日連続</span>
         </div>
 
         {/* User Avatar */}
@@ -66,7 +96,7 @@ export function TopBar() {
             )}
           </div>
           <span className="hidden text-sm font-semibold text-slate-700 sm:block">
-            {user.name}
+            {userName}
           </span>
         </div>
       </div>

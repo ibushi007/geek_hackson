@@ -1,4 +1,13 @@
 // datasource と generator はそのまま
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // もし MySQL を使っているなら "mysql" に書き換え
+  url      = env("DATABASE_URL")
+  // ここに directUrl = env("DIRECT_URL") がもしあったら、必ず消してください！
+}
 
 model User {
   id           String        @id @default(uuid())

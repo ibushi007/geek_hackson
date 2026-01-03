@@ -58,8 +58,10 @@ export function AICoach({ message }: Props) {
           <div className="p-4">
             <div className="flex gap-3">
               {/* Avatar */}
+              {/* Avatar */}
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-teal-100">
-                <span className="text-lg">🤖</span>
+                {/* ロボットから、成長を見守る妖精や太陽のような絵文字へ */}
+                <span className="text-lg">🧚</span>
               </div>
               {/* Message bubble */}
               <div className="flex-1">
@@ -72,16 +74,18 @@ export function AICoach({ message }: Props) {
             {/* Quick actions */}
             <div className="mt-4 flex flex-wrap gap-2">
               <button
-               onClick={() => {
-                 setIsOpen(false);       // 1. 吹き出しアイコンに戻す
-                 setIsMinimized(false);  // 2. 次に開いた時にメッセージが見えるように最小化を解除しておく
-              }}               
-               className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100">
+                onClick={() => {
+                  setIsOpen(false); // 1. 吹き出しアイコンに戻す
+                  setIsMinimized(false); // 2. 次に開いた時にメッセージが見えるように最小化を解除しておく
+                }}
+                className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+              >
                 💪 ありがとう！
               </button>
               <button
-               onClick={() => router.push("/log/new")}
-               className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-200">
+                onClick={() => router.push("/log/new")}
+                className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-200"
+              >
                 📝 日報を書く
               </button>
             </div>
