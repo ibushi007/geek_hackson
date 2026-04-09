@@ -44,6 +44,10 @@ export default function GrowthPage() {
           weeklyCommits: mockGrowthData.weeklyCommits,
           streak: mockGrowthData.streak,
           momentum: mockGrowthData.momentum,
+          skillMap: mockGrowthData.techSkillMap.map((skill) => ({
+            name: skill.name,
+            percentage: skill.level,
+          })),
         });
       } finally {
         setLoading(false);
@@ -249,7 +253,9 @@ export default function GrowthPage() {
       </div>
 
       {/* Skill Map */}
-      <SkillMap skills={mockGrowthData.techSkillMap} />
+      <SkillMap
+        skills={growthData?.skillMap || []}
+      />
 
       {/* AI Coach */}
       <AICoach message={aiCoachMessages.growth} />
