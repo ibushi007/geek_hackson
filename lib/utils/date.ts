@@ -27,3 +27,4 @@ export const formatISOToJapanese = (isoDate: string): string => {
   const day = date.getDate();
   return `${year}年${month}月${day}日`;
 };
+
