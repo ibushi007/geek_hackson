@@ -50,8 +50,8 @@ export type GrowthData = {
 // ========================================
 export const user = {
   id: "user-001",
-  name: "Ibuki",
-  githubId: "ibuki007",
+  name: "ssaladaku39",
+  githubId: "ssaladaku39",
   avatarUrl: "https://avatars.githubusercontent.com/u/1?v=4",
   streak: 7,
 };
@@ -180,7 +180,7 @@ export const growthData: GrowthData = {
 // AIコーチのメッセージ（ページごと）
 // ========================================
 export const aiCoachMessages = {
-  dashboard: "今日も学習お疲れ様です！少しずつでも毎日続けることが大切ですよ。",
+  dashboard: "インターン絶対受かるぞ！",
   growth: "グラフが右肩上がり！この調子で続けていきましょう 📈",
   newLog: "今日の学びを記録しましょう。1行でも大丈夫ですよ！",
   weekly: "一週間の振り返りは成長を実感できる大切な時間です ✨",

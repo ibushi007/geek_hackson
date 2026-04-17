@@ -7,10 +7,16 @@ interface GitHubProfile {
   login: string;
   name?: string;
   avatar_url?: string;
-  access_token?: string;
 }
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  useSecureCookies: false,
+
+  pages: {
+    signIn: "/login",
+  },
+
   providers: [
     GitHub({
       clientId: process.env.GITHUB_ID!,
@@ -32,13 +38,11 @@ export const authOptions: NextAuthOptions = {
             update: {
               name: githubProfile.name || null,
               avatarUrl: githubProfile.avatar_url || null,
-              accessToken: account.access_token || null,
             },
             create: {
               githubId: githubProfile.login,
               name: githubProfile.name || null,
               avatarUrl: githubProfile.avatar_url || null,
-              accessToken: account.access_token || null,
             },
           });
         } catch (error) {
@@ -79,7 +83,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

@@ -46,7 +46,7 @@ export default function EditLogPage() {
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/reports/${logId}`);
+        const response = await fetch(`/api/log/${logId}`);
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -115,7 +115,7 @@ export default function EditLogPage() {
         techTags: techTags,
       };
 
-      const response = await fetch(`/api/reports/${logId}`, {
+      const response = await fetch(`/api/log/${logId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
